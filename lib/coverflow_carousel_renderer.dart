@@ -13,6 +13,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
   final double skewAngle;
   final double nearCardSpacing;
   final double farCardSpacing;
+  final PageController pageController;
 
   const CoverflowCarouselRenderer({
     super.key,
@@ -26,6 +27,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     required this.skewAngle,
     required this.nearCardSpacing,
     required this.farCardSpacing,
+    required this.pageController,
   });
 
   double getCardPosition(int index) {
