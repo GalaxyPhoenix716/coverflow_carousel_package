@@ -13,7 +13,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
   final double skewAngle;
   final double nearCardSpacing;
   final double farCardSpacing;
-  final PageController pageController;
+  final PageController controller;
 
   const CoverflowCarouselRenderer({
     super.key,
@@ -27,7 +27,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     required this.skewAngle,
     required this.nearCardSpacing,
     required this.farCardSpacing,
-    required this.pageController,
+    required this.controller,
   });
 
   double getCardPosition(int index) {
@@ -92,31 +92,40 @@ class CoverflowCarouselRenderer extends StatelessWidget {
 
     return Positioned(
       left: position - width / 2,
-      child: Transform(
-        alignment: Alignment.center,
-        transform: getTransform(index),
-        child: Stack(
-          children: [
-            Container(
-              width: width,
-              height: height,
-              padding: EdgeInsets.symmetric(vertical: verticalPadding),
-              child: itemBuilder(context, index),
-            ),
+      child: GestureDetector(
+        onTap: () {
+          controller.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeOutCubic,
+          );
+        },
+        child: Transform(
+          alignment: Alignment.center,
+          transform: getTransform(index),
+          child: Stack(
+            children: [
+              Container(
+                width: width,
+                height: height,
+                padding: EdgeInsets.symmetric(vertical: verticalPadding),
+                child: itemBuilder(context, index),
+              ),
 
-            Container(
-              width: width,
-              height: height,
-              padding: EdgeInsets.symmetric(vertical: verticalPadding),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: BackdropFilter(
-                  filter: getFilter(index),
-                  child: Container(),
+              Container(
+                width: width,
+                height: height,
+                padding: EdgeInsets.symmetric(vertical: verticalPadding),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: BackdropFilter(
+                    filter: getFilter(index),
+                    child: Container(),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

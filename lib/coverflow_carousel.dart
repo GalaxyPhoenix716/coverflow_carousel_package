@@ -84,7 +84,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 return CoverflowCarouselRenderer(
-                  pageController: _controller,
+                  controller: _controller,
                   centerIndex: currentPage,
                   maxWidth: constraints.maxWidth,
                   itemWidth: widget.itemWidth,
