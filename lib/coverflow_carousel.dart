@@ -1,3 +1,4 @@
+import 'package:coverflow_carousel/coverflow_carousel_controller.dart';
 import 'package:coverflow_carousel/coverflow_carousel_renderer.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +12,7 @@ class CoverflowCarousel extends StatefulWidget {
   final double skewAngle;
   final int initialPage;
   final ValueChanged<int>? onPageChanged;
+  final CoverflowCarouselController? controller;
   final double nearCardSpacing;
   final double farCardSpacing;
   final Duration animationDuration;
@@ -31,6 +33,7 @@ class CoverflowCarousel extends StatefulWidget {
     this.farCardSpacing = 50,
     this.animationDuration = const Duration(milliseconds: 350),
     this.animationCurve = Curves.easeOutCubic,
+    this.controller,
   });
 
   @override
@@ -64,11 +67,51 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
         widget.onPageChanged?.call(rounded);
       }
     });
+
+    _attachController();
+  }
+
+  @override
+  void didUpdateWidget(covariant CoverflowCarousel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller?.detach();
+
+      _attachController();
+    }
+  }
+
+  void _attachController() {
+    widget.controller?.attach(
+      next: () {
+        _controller.nextPage(
+          duration: widget.animationDuration,
+          curve: widget.animationCurve,
+        );
+      },
+      previous: () {
+        _controller.previousPage(
+          duration: widget.animationDuration,
+          curve: widget.animationCurve,
+        );
+      },
+      animateTo: (index) {
+        _controller.animateToPage(
+          index,
+          duration: widget.animationDuration,
+          curve: widget.animationCurve,
+        );
+      },
+    );
   }
 
   @override
   void dispose() {
+    widget.controller?.detach();
+
     _controller.dispose();
+
     super.dispose();
   }
 
