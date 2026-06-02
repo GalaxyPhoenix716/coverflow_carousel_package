@@ -6,12 +6,15 @@ class CoverflowCarousel extends StatefulWidget {
   final IndexedWidgetBuilder itemBuilder;
   final double itemWidth;
   final double itemHeight;
+  final int visibleItems;
   final double obscure;
   final double skewAngle;
   final int initialPage;
   final ValueChanged<int>? onPageChanged;
   final double nearCardSpacing;
   final double farCardSpacing;
+  final Duration animationDuration;
+  final Curve animationCurve;
 
   const CoverflowCarousel.builder({
     super.key,
@@ -19,12 +22,15 @@ class CoverflowCarousel extends StatefulWidget {
     required this.itemBuilder,
     required this.itemWidth,
     required this.itemHeight,
+    this.visibleItems = 3,
     this.obscure = 0,
     this.skewAngle = -0.35,
     this.initialPage = 0,
     this.onPageChanged,
     this.nearCardSpacing = 45,
     this.farCardSpacing = 50,
+    this.animationDuration = const Duration(milliseconds: 350),
+    this.animationCurve = Curves.easeOutCubic,
   });
 
   @override
@@ -90,11 +96,14 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
                   itemWidth: widget.itemWidth,
                   itemHeight: widget.itemHeight,
                   itemCount: widget.itemCount,
+                  visibleItems: widget.visibleItems,
                   itemBuilder: widget.itemBuilder,
                   obscure: widget.obscure,
                   skewAngle: widget.skewAngle,
                   nearCardSpacing: widget.nearCardSpacing,
                   farCardSpacing: widget.farCardSpacing,
+                  animationDuration: widget.animationDuration,
+                  animationCurve: widget.animationCurve,
                 );
               },
             ),

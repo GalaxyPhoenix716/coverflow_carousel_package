@@ -9,11 +9,14 @@ class CoverflowCarouselRenderer extends StatelessWidget {
   final double maxWidth;
   final double itemWidth;
   final double itemHeight;
+  final int visibleItems;
   final double obscure;
   final double skewAngle;
   final double nearCardSpacing;
   final double farCardSpacing;
   final PageController controller;
+  final Duration animationDuration;
+  final Curve animationCurve;
 
   const CoverflowCarouselRenderer({
     super.key,
@@ -28,6 +31,9 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     required this.nearCardSpacing,
     required this.farCardSpacing,
     required this.controller,
+    required this.animationDuration,
+    required this.animationCurve,
+    required this.visibleItems,
   });
 
   double getCardPosition(int index) {
@@ -96,8 +102,8 @@ class CoverflowCarouselRenderer extends StatelessWidget {
         onTap: () {
           controller.animateToPage(
             index,
-            duration: const Duration(milliseconds: 350),
-            curve: Curves.easeOutCubic,
+            duration: animationDuration,
+            curve: animationCurve,
           );
         },
         child: Transform(
@@ -150,7 +156,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     cards.sort((a, b) => a.zIndex.compareTo(b.zIndex));
 
     return cards
-        .where((card) => (centerIndex - card.id).abs() <= 3.5)
+        .where((card) => (centerIndex - card.id).abs() <= visibleItems + 0.5)
         .map((card) => buildCard(context, card.id))
         .toList();
   }
