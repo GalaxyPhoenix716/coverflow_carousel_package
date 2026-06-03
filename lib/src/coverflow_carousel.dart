@@ -20,6 +20,7 @@ class CoverflowCarousel extends StatefulWidget {
   final CoverflowCarouselController? controller;
   final ValueChanged<int>? onPageChanged;
   final double viewportFraction;
+  final bool isInfinite;
 
   const CoverflowCarousel.builder({
     super.key,
@@ -39,6 +40,7 @@ class CoverflowCarousel extends StatefulWidget {
     this.animationCurve = Curves.easeOutCubic,
     this.controller,
     this.viewportFraction = 0.25,
+    this.isInfinite = false,
   });
 
   @override
@@ -53,10 +55,13 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
   @override
   void initState() {
     super.initState();
-    currentPage = widget.initialPage.toDouble();
+    final initialVirtualPage = widget.isInfinite
+        ? (10000 * widget.itemCount) + widget.initialPage
+        : widget.initialPage;
+    currentPage = initialVirtualPage.toDouble();
     _controller = PageController(
       viewportFraction: widget.viewportFraction,
-      initialPage: widget.initialPage,
+      initialPage: initialVirtualPage,
     );
 
     _controller.addListener(_pageListener);
@@ -70,10 +75,13 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
     });
 
     final rounded = page.round();
+    final realIndex = widget.isInfinite && widget.itemCount > 0
+        ? ((rounded % widget.itemCount) + widget.itemCount) % widget.itemCount
+        : rounded;
 
-    if (rounded != _lastReportedPage) {
-      _lastReportedPage = rounded;
-      widget.onPageChanged?.call(rounded);
+    if (realIndex != _lastReportedPage) {
+      _lastReportedPage = realIndex;
+      widget.onPageChanged?.call(realIndex);
     }
   }
 
@@ -86,16 +94,39 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
       _attachController();
     }
 
-    if (oldWidget.viewportFraction != widget.viewportFraction) {
-      final currentPageIndex = _controller.positions.isNotEmpty
-          ? _controller.page?.round() ?? widget.initialPage
-          : widget.initialPage;
+    if (oldWidget.viewportFraction != widget.viewportFraction ||
+        oldWidget.isInfinite != widget.isInfinite) {
+      final double currentRawPage = _controller.positions.isNotEmpty
+          ? _controller.page ?? widget.initialPage.toDouble()
+          : widget.initialPage.toDouble();
+      final int nextPageIndex;
+
+      if (oldWidget.isInfinite != widget.isInfinite) {
+        if (widget.isInfinite) {
+          final int currentRealIndex = widget.itemCount > 0
+              ? ((currentRawPage.round() % widget.itemCount) +
+                      widget.itemCount) %
+                  widget.itemCount
+              : 0;
+          nextPageIndex = (10000 * widget.itemCount) + currentRealIndex;
+        } else {
+          nextPageIndex = widget.itemCount > 0
+              ? ((currentRawPage.round() % widget.itemCount) +
+                      widget.itemCount) %
+                  widget.itemCount
+              : 0;
+        }
+      } else {
+        nextPageIndex = currentRawPage.round();
+      }
+
       _controller.removeListener(_pageListener);
       _controller.dispose();
       _controller = PageController(
         viewportFraction: widget.viewportFraction,
-        initialPage: currentPageIndex,
+        initialPage: nextPageIndex,
       );
+      currentPage = nextPageIndex.toDouble();
       _controller.addListener(_pageListener);
       _attachController();
     }
@@ -116,13 +147,31 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
         );
       },
       animateTo: (index) {
+        final targetPage = widget.isInfinite
+            ? _getNearestVirtualPage(index, currentPage, widget.itemCount)
+            : index;
         _controller.animateToPage(
-          index,
+          targetPage,
           duration: widget.animationDuration,
           curve: widget.animationCurve,
         );
       },
     );
+  }
+
+  int _getNearestVirtualPage(
+      int targetRealIndex, double currentVirtualPage, int itemCount) {
+    if (itemCount <= 0) return 0;
+    final int currentVirtualRound = currentVirtualPage.round();
+    final int currentRealIndex =
+        ((currentVirtualRound % itemCount) + itemCount) % itemCount;
+    int diff = targetRealIndex - currentRealIndex;
+    if (diff > itemCount / 2) {
+      diff -= itemCount;
+    } else if (diff < -itemCount / 2) {
+      diff += itemCount;
+    }
+    return currentVirtualRound + diff;
   }
 
   @override
@@ -142,7 +191,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
         children: [
           PageView.builder(
             controller: _controller,
-            itemCount: widget.itemCount,
+            itemCount: widget.isInfinite ? null : widget.itemCount,
             scrollBehavior: const _CoverflowScrollBehavior(),
             itemBuilder: (_, _) {
               return const SizedBox.shrink();
@@ -167,6 +216,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
                 perspective: widget.perspective,
                 animationDuration: widget.animationDuration,
                 animationCurve: widget.animationCurve,
+                isInfinite: widget.isInfinite,
               );
             },
           ),

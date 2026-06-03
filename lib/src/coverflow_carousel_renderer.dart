@@ -18,6 +18,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
   final PageController controller;
   final Duration animationDuration;
   final Curve animationCurve;
+  final bool isInfinite;
 
   const CoverflowCarouselRenderer({
     super.key,
@@ -36,6 +37,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     required this.animationCurve,
     required this.visibleItems,
     required this.perspective,
+    required this.isInfinite,
   });
 
   double getCardPosition(int index) {
@@ -88,7 +90,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     );
   }
 
-  Widget buildCard(BuildContext context, int index) {
+  Widget buildCard(BuildContext context, int index, Widget child) {
     final distance = (centerIndex - index).abs();
     final width = getCardWidth(index);
     final height = (itemHeight * (1 - distance * 0.08)).clamp(
@@ -122,7 +124,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
                 padding: EdgeInsets.symmetric(vertical: verticalPadding),
                 child: AbsorbPointer(
                   absorbing: !isCentered,
-                  child: itemBuilder(context, index),
+                  child: child,
                 ),
               ),
 
@@ -147,27 +149,40 @@ class CoverflowCarouselRenderer extends StatelessWidget {
   }
 
   List<Widget> buildCards(BuildContext context) {
-    final cards = List.generate(
-      itemCount,
-      (index) => CardModel(id: index, child: itemBuilder(context, index)),
-    );
+    final centerRound = centerIndex.round();
+    final cards = <CardModel>[];
+    final buffer = visibleItems + 1;
+
+    for (int i = centerRound - buffer; i <= centerRound + buffer; i++) {
+      if (!isInfinite && (i < 0 || i >= itemCount)) {
+        continue;
+      }
+      if (itemCount <= 0) continue;
+
+      if ((centerIndex - i).abs() > visibleItems + 0.5) {
+        continue;
+      }
+
+      final realIndex = ((i % itemCount) + itemCount) % itemCount;
+      cards.add(
+        CardModel(
+          id: i,
+          child: itemBuilder(context, realIndex),
+        ),
+      );
+    }
 
     for (final card in cards) {
-      if (card.id == centerIndex.round()) {
+      if (card.id == centerRound) {
         card.zIndex = 999;
-      } else if (card.id < centerIndex) {
-        card.zIndex = card.id.toDouble();
       } else {
-        card.zIndex = itemCount - card.id.toDouble();
+        card.zIndex = -(centerIndex - card.id).abs();
       }
     }
 
     cards.sort((a, b) => a.zIndex.compareTo(b.zIndex));
 
-    return cards
-        .where((card) => (centerIndex - card.id).abs() <= visibleItems + 0.5)
-        .map((card) => buildCard(context, card.id))
-        .toList();
+    return cards.map((card) => buildCard(context, card.id, card.child)).toList();
   }
 
   @override

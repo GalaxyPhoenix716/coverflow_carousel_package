@@ -26,9 +26,7 @@ Perfect for music apps, movie browsers, ecommerce showcases, galleries, portfoli
 
 ## 📸 Preview
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/GalaxyPhoenix716/coverflow_carousel_package/main/assets/coverflow_carousel_demo.gif" width="350" alt="Coverflow Carousel Demo">
-</p>
+![Coverflow Carousel Demo](assets/coverflow_carousel_demo.gif)
 
 ---
 

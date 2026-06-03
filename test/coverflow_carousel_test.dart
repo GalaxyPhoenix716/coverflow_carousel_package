@@ -216,4 +216,119 @@ void main() {
     // Now the inner tap handler should have fired!
     expect(innerTapped, isTrue);
   });
+
+  testWidgets('CoverflowCarousel infinite scroll starts at high page and maps indices',
+      (WidgetTester tester) async {
+    int pageChangedIndex = -1;
+    final controller = CoverflowCarouselController();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            controller: controller,
+            itemCount: 5,
+            itemWidth: 200,
+            itemHeight: 300,
+            isInfinite: true,
+            initialPage: 0,
+            onPageChanged: (index) {
+              pageChangedIndex = index;
+            },
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    // PageView controller should be initialized at a high page number (10000 * 5 = 50000)
+    final pageView = tester.widget<PageView>(find.byType(PageView));
+    expect(pageView.controller!.initialPage, 50000);
+
+    // Let's call controller.next() to verify it goes to 1
+    controller.next();
+    await tester.pumpAndSettle();
+    expect(pageChangedIndex, 1);
+
+    // Let's call controller.previous() twice to go to index 4
+    controller.previous();
+    await tester.pumpAndSettle();
+    controller.previous();
+    await tester.pumpAndSettle();
+    expect(pageChangedIndex, 4);
+    expect(pageView.controller!.page, 49999.0);
+  });
+
+  testWidgets('CoverflowCarouselController animateTo selects shortest path on infinite scroll',
+      (WidgetTester tester) async {
+    final controller = CoverflowCarouselController();
+    int pageChangedIndex = -1;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            controller: controller,
+            itemCount: 5,
+            itemWidth: 200,
+            itemHeight: 300,
+            isInfinite: true,
+            initialPage: 0,
+            onPageChanged: (index) {
+              pageChangedIndex = index;
+            },
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    final pageView = tester.widget<PageView>(find.byType(PageView));
+    expect(pageView.controller!.page, 50000.0);
+
+    // Animate to index 4. The nearest virtual page is 49999 (1 page back) instead of 50004 (4 pages forward).
+    controller.animateTo(4);
+    await tester.pumpAndSettle();
+
+    expect(pageView.controller!.page, 49999.0);
+    expect(pageChangedIndex, 4);
+
+    // Animate to index 1. Nearest virtual page from 49999 is 50001 (2 pages forward) instead of 49996 (3 pages back).
+    controller.animateTo(1);
+    await tester.pumpAndSettle();
+
+    expect(pageView.controller!.page, 50001.0);
+    expect(pageChangedIndex, 1);
+  });
+
+  testWidgets('CoverflowCarousel infinite scroll does not throw RangeError when accessing lists in itemBuilder',
+      (WidgetTester tester) async {
+    final list = ['A', 'B', 'C', 'D', 'E']; // Length 5
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: list.length,
+            itemWidth: 200,
+            itemHeight: 300,
+            isInfinite: true,
+            initialPage: 0,
+            itemBuilder: (context, index) {
+              // This would throw RangeError if index was virtual (e.g. 5000) instead of mapped (0-4)
+              return Text(list[index]);
+            },
+          ),
+        ),
+      ),
+    );
+
+    // Verify it renders successfully and we can see items
+    expect(find.text('A'), findsOneWidget);
+    expect(find.text('B'), findsOneWidget);
+  });
 }
