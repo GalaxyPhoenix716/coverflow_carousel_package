@@ -38,3 +38,10 @@
 8. **Testing**: Built a full suite of 10 widget tests verifying layouts, gestures, entry transitions, and controllers.
 9. **Code Documentation**: Added 100% pub.dev public API coverage with detailed Dart doc comments (`///`) on all classes, properties, constructors, methods, and enums.
 10. **Architecture & Mathematics Reference**: Added `package_documentation.md` containing detailed 3D transform projection matrices, spacing equations, gesture layers, and timeline stagger formulas.
+11. **Lint Fixes**: Resolved unnecessary library name lint warnings in export declarations.
+
+# 1.1.1
+
+1. **Example Application**: Added a complete, interactive, and beautifully styled example application under `example/` demonstrating infinite scroll, entry animations, blur obscuring, and programmatic controllers.
+2. **Pub Points Optimization**: Set up `example/pubspec.yaml` to ensure the package achieves a perfect score on pub.dev.
+

@@ -8,35 +8,42 @@ Perfect for music apps, movie browsers, ecommerce showcases, galleries, portfoli
 
 ---
 
-## ✨ Features
+## Features
 
-- 🎨 Smooth 3D coverflow-style design
-- 📱 Responsive across different screen sizes
-- 🔄 Swipe-based navigation
-- 🏗️ Builder-based API for optimal performance
-- 📏 Fully customizable card dimensions
-- 📐 Adjustable overlap and spacing
-- 🌊 Smooth animations and transitions
-- 🧊 Optional blur effects for side cards
-- 🎯 Configurable visible card count
-- 🔀 Adjustable perspective and rotation
-- 🎮 External controller support
-- ⚡ Optimized rendering for large datasets
-- ♻️ Reusable and production-ready
+- Smooth 3D coverflow-style design
+- Responsive across different screen sizes
+- Swipe-based navigation
+- Infinite scroll support (seamless looping and circular swiping)
+- Dynamic entry animations (fades, zoom scales, horizontal fanning, sliding, and sequential stacking)
+- Custom viewport fraction (dynamic page scroll width adjustments)
+- Click-to-focus on off-center cards
+- Multi-gesture compatibility (internal card interactions work seamlessly on active cards)
+- Web and desktop drag compatibility (mouse and trackpad swipe support)
+- Suppressed native scrollbars on desktop/web
+- Builder-based API for optimal rendering performance
+- Fully customizable card dimensions
+- Adjustable overlap and spacing
+- Smooth animations and transitions
+- Optional blur effects for side cards
+- Configurable visible card count
+- Adjustable perspective and rotation
+- External controller support
+- Optimized rendering for large datasets
+- Reusable and production-ready
 
-## 📸 Preview
+## Preview
 
 ![Coverflow Carousel Demo](assets/coverflow_carousel_demo.gif)
 
 ---
 
-## 🚀 Installation
+## Installation
 
 Add the package to your `pubspec.yaml`.
 
 ```yaml
 dependencies:
-  coverflow_carousel: ^1.0.0
+  coverflow_carousel: ^1.1.1
 ```
 
 OR
@@ -57,7 +64,8 @@ flutter pub get
 
 ```dart
 CoverflowCarousel.builder(
-    itemCount: 10, itemWidth: 250,
+    itemCount: 10,
+    itemWidth: 250,
     itemHeight: 320,
     itemBuilder: (context, index) {
         return Container(
@@ -100,7 +108,7 @@ controller.previous();
 controller.animateTo(5);
 ```
 
-## 🎬 Entry Animations
+## Entry Animations
 
 Make the carousel feel organic and alive when it first appears on the screen. Select from staggered fades, zoom scaling, spacing expansions, or horizontal slides.
 
@@ -130,7 +138,7 @@ CoverflowCarousel.builder(
 
 ---
 
-## ⚙️ Parameters
+## Parameters
 
 | Parameter              | Type                         | Description                                                         |
 | :--------------------- | :--------------------------- | :------------------------------------------------------------------ |
@@ -156,20 +164,20 @@ CoverflowCarousel.builder(
 
 ---
 
-## 💡 Perfect For
+## Perfect For
 
-- 🎵 Music Applications
-- 🎬 Movie & Streaming Platforms
-- 🛍️ Ecommerce Product Showcases
-- 🖼️ Galleries & Portfolios
-- ✈️ Travel Applications
-- 📚 Educational Apps
-- 🎮 Gaming Interfaces
-- 📱 Modern Mobile Experiences
+- Music Applications
+- Movie & Streaming Platforms
+- E-commerce Product Showcases
+- Galleries & Portfolios
+- Travel Applications
+- Educational Apps
+- Gaming Interfaces
+- Modern Mobile Experiences
 
 ---
 
-## 🏆 Why Coverflow Carousel?
+## Why Coverflow Carousel?
 
 Unlike traditional carousels, Coverflow Carousel creates depth and focus through:
 
@@ -188,7 +196,7 @@ The result is a premium browsing experience that feels modern, immersive, and in
 
 Coverflow Carousel is designed to provide a beautiful and highly customizable 3D coverflow-style carousel experience for Flutter applications.
 
-### ❗ Issues & Bug Reports
+### Issues & Bug Reports
 
 If you encounter a bug or unexpected behavior, please open an issue with:
 
@@ -198,11 +206,11 @@ If you encounter a bug or unexpected behavior, please open an issue with:
 - Expected behavior
 - Screenshots or recordings (if applicable)
 
-### 📥 Feature Requests
+### Feature Requests
 
 Suggestions and feature requests are always welcome. If you have an idea that could improve the package, feel free to create an issue describing the use case and proposed solution.
 
-### 🤝 Contributing
+### Contributing
 
 Contributions are welcome. Whether it's fixing bugs, improving documentation, optimizing performance, or adding new features, pull requests are appreciated.
 
@@ -213,18 +221,16 @@ Before submitting a pull request:
 3. Update documentation when necessary.
 4. Add examples for new features.
 
-### ❓ Support
+### Support
 
 For questions, issues, or suggestions, please use the project's GitHub Issues page.
 
-### 🛠️ Future Development
+### Future Development
 
 Planned improvements include:
 
-- Infinite scrolling
-- Entry animations
-- Additional customization options
-- More visual effects
-- Performance optimizations
+- Additional custom entry curves and animation presets
+- Direct mouse scroll wheel scroll-interaction support
+- Customizable layout coordinates for vertical coverflow carousels
 
 Thank you for using Coverflow Carousel!
