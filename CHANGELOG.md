@@ -1,23 +1,27 @@
 ## 1.0.0
 
-✨ Smooth 3D coverflow-style carousel
+1. Smooth 3D coverflow-style carousel
 
-✨ Customizable card dimensions
+2. Customizable card dimensions
 
-✨ Adjustable overlap and spacing
+3. Adjustable overlap and spacing
 
-✨ Perspective and rotation effects
+4. Perspective and rotation effects
 
-✨ Smooth swipe navigation
+5. Smooth swipe navigation
 
-✨ Controller support
+6. Controller support
 
-✨ Programmatic navigation
+7. Programmatic navigation
 
-✨ Blur effects for non-focused cards
+8. Blur effects for non-focused cards
 
-✨ Responsive layout
+9. Responsive layout
 
-✨ Optimized rendering for large datasets
+10. Optimized rendering for large datasets
 
-✨ Builder-based API
+11. Builder-based API
+
+# 1.0.1
+
+1. Fixed README demo GIF link
