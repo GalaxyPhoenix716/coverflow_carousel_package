@@ -80,7 +80,7 @@ void main() {
     );
 
     // Tap on Item 1 (side card)
-    await tester.tap(find.byKey(const Key('card-1')));
+    await tester.tap(find.byKey(const Key('card-1')), warnIfMissed: false);
     await tester.pumpAndSettle();
 
     // The page should have changed to 1
@@ -167,5 +167,53 @@ void main() {
     controller.animateTo(3);
     await tester.pumpAndSettle();
     expect(pageChangedIndex, 3);
+  });
+
+  testWidgets('Tapping on a side card with internal gestures animates it to center instead of triggering inner gesture',
+      (WidgetTester tester) async {
+    int pageChangedIndex = -1;
+    bool innerTapped = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 5,
+            itemWidth: 200,
+            itemHeight: 300,
+            nearCardSpacing: 250,
+            farCardSpacing: 250,
+            initialPage: 0,
+            onPageChanged: (index) {
+              pageChangedIndex = index;
+            },
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                key: Key('card-$index'),
+                onTap: () {
+                  innerTapped = true;
+                },
+                child: Text('Item $index'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    // Tap on Item 1 (side card) which has an internal onTap handler
+    await tester.tap(find.byKey(const Key('card-1')), warnIfMissed: false);
+    await tester.pumpAndSettle();
+
+    // The page should have changed to 1, but the inner tap handler should NOT have fired
+    expect(pageChangedIndex, 1);
+    expect(innerTapped, isFalse);
+
+    // Now that Item 1 is centered, tap it again
+    await tester.tap(find.byKey(const Key('card-1')));
+    await tester.pump();
+
+    // Now the inner tap handler should have fired!
+    expect(innerTapped, isTrue);
   });
 }

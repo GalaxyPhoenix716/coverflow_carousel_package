@@ -143,14 +143,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
           PageView.builder(
             controller: _controller,
             itemCount: widget.itemCount,
-            scrollBehavior: const ScrollBehavior().copyWith(
-              dragDevices: {
-                PointerDeviceKind.touch,
-                PointerDeviceKind.mouse,
-                PointerDeviceKind.trackpad,
-                PointerDeviceKind.stylus,
-              },
-            ),
+            scrollBehavior: const _CoverflowScrollBehavior(),
             itemBuilder: (_, _) {
               return const SizedBox.shrink();
             },
@@ -180,5 +173,23 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
         ],
       ),
     );
+  }
+}
+
+class _CoverflowScrollBehavior extends ScrollBehavior {
+  const _CoverflowScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+      };
+
+  @override
+  Widget buildScrollbar(
+      BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
   }
 }
