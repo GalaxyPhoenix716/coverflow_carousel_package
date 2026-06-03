@@ -3,6 +3,16 @@ import 'dart:ui';
 import 'coverflow_carousel_controller.dart';
 import 'coverflow_carousel_renderer.dart';
 
+enum CoverflowEntryAnimation {
+  none,
+  fadeIn,
+  scaleUp,
+  spacingExpand,
+  staggeredSlide,
+  fadeScale,
+  stack,
+}
+
 class CoverflowCarousel extends StatefulWidget {
   final int itemCount;
   final IndexedWidgetBuilder itemBuilder;
@@ -21,6 +31,9 @@ class CoverflowCarousel extends StatefulWidget {
   final ValueChanged<int>? onPageChanged;
   final double viewportFraction;
   final bool isInfinite;
+  final CoverflowEntryAnimation entryAnimation;
+  final Duration entryAnimationDuration;
+  final Curve entryAnimationCurve;
 
   const CoverflowCarousel.builder({
     super.key,
@@ -41,28 +54,46 @@ class CoverflowCarousel extends StatefulWidget {
     this.controller,
     this.viewportFraction = 0.25,
     this.isInfinite = false,
+    this.entryAnimation = CoverflowEntryAnimation.none,
+    this.entryAnimationDuration = const Duration(milliseconds: 1000),
+    this.entryAnimationCurve = Curves.easeOutCubic,
   });
 
   @override
   State<CoverflowCarousel> createState() => _CoverflowCarouselState();
 }
 
-class _CoverflowCarouselState extends State<CoverflowCarousel> {
+class _CoverflowCarouselState extends State<CoverflowCarousel>
+    with SingleTickerProviderStateMixin {
   late PageController _controller;
   late double currentPage;
   int _lastReportedPage = -1;
+  late int _initialVirtualPage;
+  AnimationController? _entryController;
+  Animation<double>? _entryAnimation;
 
   @override
   void initState() {
     super.initState();
-    final initialVirtualPage = widget.isInfinite
+    _initialVirtualPage = widget.isInfinite
         ? (10000 * widget.itemCount) + widget.initialPage
         : widget.initialPage;
-    currentPage = initialVirtualPage.toDouble();
+    currentPage = _initialVirtualPage.toDouble();
     _controller = PageController(
       viewportFraction: widget.viewportFraction,
-      initialPage: initialVirtualPage,
+      initialPage: _initialVirtualPage,
     );
+
+    if (widget.entryAnimation != CoverflowEntryAnimation.none) {
+      _entryController = AnimationController(
+        vsync: this,
+        duration: widget.entryAnimationDuration,
+      );
+      _entryAnimation = CurveTween(
+        curve: widget.entryAnimationCurve,
+      ).animate(_entryController!);
+      _entryController!.forward();
+    }
 
     _controller.addListener(_pageListener);
     _attachController();
@@ -105,15 +136,15 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
         if (widget.isInfinite) {
           final int currentRealIndex = widget.itemCount > 0
               ? ((currentRawPage.round() % widget.itemCount) +
-                      widget.itemCount) %
-                  widget.itemCount
+                        widget.itemCount) %
+                    widget.itemCount
               : 0;
           nextPageIndex = (10000 * widget.itemCount) + currentRealIndex;
         } else {
           nextPageIndex = widget.itemCount > 0
               ? ((currentRawPage.round() % widget.itemCount) +
-                      widget.itemCount) %
-                  widget.itemCount
+                        widget.itemCount) %
+                    widget.itemCount
               : 0;
         }
       } else {
@@ -160,7 +191,10 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
   }
 
   int _getNearestVirtualPage(
-      int targetRealIndex, double currentVirtualPage, int itemCount) {
+    int targetRealIndex,
+    double currentVirtualPage,
+    int itemCount,
+  ) {
     if (itemCount <= 0) return 0;
     final int currentVirtualRound = currentVirtualPage.round();
     final int currentRealIndex =
@@ -177,9 +211,8 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
   @override
   void dispose() {
     widget.controller?.detach();
-
     _controller.dispose();
-
+    _entryController?.dispose();
     super.dispose();
   }
 
@@ -198,28 +231,63 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
             },
           ),
 
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return CoverflowCarouselRenderer(
-                controller: _controller,
-                centerIndex: currentPage,
-                maxWidth: constraints.maxWidth,
-                itemWidth: widget.itemWidth,
-                itemHeight: widget.itemHeight,
-                itemCount: widget.itemCount,
-                visibleItems: widget.visibleItems,
-                itemBuilder: widget.itemBuilder,
-                obscure: widget.obscure,
-                skewAngle: widget.skewAngle,
-                nearCardSpacing: widget.nearCardSpacing,
-                farCardSpacing: widget.farCardSpacing,
-                perspective: widget.perspective,
-                animationDuration: widget.animationDuration,
-                animationCurve: widget.animationCurve,
-                isInfinite: widget.isInfinite,
-              );
-            },
-          ),
+          if (widget.entryAnimation == CoverflowEntryAnimation.none)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return CoverflowCarouselRenderer(
+                  controller: _controller,
+                  centerIndex: currentPage,
+                  maxWidth: constraints.maxWidth,
+                  itemWidth: widget.itemWidth,
+                  itemHeight: widget.itemHeight,
+                  itemCount: widget.itemCount,
+                  visibleItems: widget.visibleItems,
+                  itemBuilder: widget.itemBuilder,
+                  obscure: widget.obscure,
+                  skewAngle: widget.skewAngle,
+                  nearCardSpacing: widget.nearCardSpacing,
+                  farCardSpacing: widget.farCardSpacing,
+                  perspective: widget.perspective,
+                  animationDuration: widget.animationDuration,
+                  animationCurve: widget.animationCurve,
+                  isInfinite: widget.isInfinite,
+                  entryAnimation: CoverflowEntryAnimation.none,
+                  entryProgress: 1.0,
+                  initialPage: _initialVirtualPage,
+                );
+              },
+            )
+          else
+            AnimatedBuilder(
+              animation: _entryAnimation!,
+              builder: (context, child) {
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return CoverflowCarouselRenderer(
+                      controller: _controller,
+                      centerIndex: currentPage,
+                      maxWidth: constraints.maxWidth,
+                      itemWidth: widget.itemWidth,
+                      itemHeight: widget.itemHeight,
+                      itemCount: widget.itemCount,
+                      visibleItems: widget.visibleItems,
+                      itemBuilder: widget.itemBuilder,
+                      obscure: widget.obscure,
+                      skewAngle: widget.skewAngle,
+                      nearCardSpacing: widget.nearCardSpacing,
+                      farCardSpacing: widget.farCardSpacing,
+                      perspective: widget.perspective,
+                      animationDuration: widget.animationDuration,
+                      animationCurve: widget.animationCurve,
+                      isInfinite: widget.isInfinite,
+                      entryAnimation: widget.entryAnimation,
+                      entryProgress: _entryAnimation!.value,
+                      initialPage: _initialVirtualPage,
+                    );
+                  },
+                );
+              },
+            ),
         ],
       ),
     );
@@ -231,15 +299,18 @@ class _CoverflowScrollBehavior extends ScrollBehavior {
 
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.trackpad,
-        PointerDeviceKind.stylus,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+    PointerDeviceKind.stylus,
+  };
 
   @override
   Widget buildScrollbar(
-      BuildContext context, Widget child, ScrollableDetails details) {
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) {
     return child;
   }
 }

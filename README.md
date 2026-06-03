@@ -100,23 +100,59 @@ controller.previous();
 controller.animateTo(5);
 ```
 
+## 🎬 Entry Animations
+
+Make the carousel feel organic and alive when it first appears on the screen. Select from staggered fades, zoom scaling, spacing expansions, or horizontal slides.
+
+```dart
+CoverflowCarousel.builder(
+  itemCount: items.length,
+  itemWidth: 250,
+  itemHeight: 320,
+  entryAnimation: CoverflowEntryAnimation.stack, // Physical stacking effect fanning center-out!
+  entryAnimationDuration: const Duration(milliseconds: 1000),
+  entryAnimationCurve: Curves.easeOutCubic,
+  itemBuilder: (context, index) {
+    return MyCard(index: index);
+  },
+)
+```
+
+### Available Animation Types:
+
+- `CoverflowEntryAnimation.none` (Default): Instantly mounts without animation.
+- `CoverflowEntryAnimation.fadeIn`: Staggered opacity fade-in from the center outward.
+- `CoverflowEntryAnimation.scaleUp`: Staggered zoom scale-up from the center outward.
+- `CoverflowEntryAnimation.spacingExpand`: Cards fan out horizontally from a center stack.
+- `CoverflowEntryAnimation.staggeredSlide`: Staggered slides in from left/right/top.
+- `CoverflowEntryAnimation.fadeScale`: Smooth staggered zoom and fade combined.
+- `CoverflowEntryAnimation.stack`: Physical stacking effect where cards scale down from the front fanning center-to-outside.
+
+---
+
 ## ⚙️ Parameters
 
-| Parameter         | Type                         | Description                                     |
-| ----------------- | ---------------------------- | ----------------------------------------------- |
-| itemCount         | int                          | Number of carousel items                        |
-| itemBuilder       | IndexedWidgetBuilder         | Builds each carousel item                       |
-| itemWidth         | double                       | Width of the focused card                       |
-| itemHeight        | double                       | Height of the focused card                      |
-| visibleDistance   | double                       | Number of visible cards around the focused item |
-| nearCardSpacing   | double                       | Spacing for adjacent cards                      |
-| farCardSpacing    | double                       | Spacing for distant cards                       |
-| skewAngle         | double                       | Card rotation angle                             |
-| perspective       | double                       | 3D perspective intensity                        |
-| obscure           | double                       | Blur intensity for side cards                   |
-| controller        | CoverflowCarouselController? | External carousel controller                    |
-| animationDuration | Duration                     | Navigation animation duration                   |
-| animationCurve    | Curve                        | Navigation animation curve                      |
+| Parameter              | Type                         | Description                                                         |
+| :--------------------- | :--------------------------- | :------------------------------------------------------------------ |
+| itemCount              | int                          | Number of carousel items                                            |
+| itemBuilder            | IndexedWidgetBuilder         | Builds each carousel item                                           |
+| itemWidth              | double                       | Width of the focused card                                           |
+| itemHeight             | double                       | Height of the focused card                                          |
+| visibleItems           | int                          | Number of visible cards on each side of focused item (default: `3`) |
+| initialPage            | int                          | Initial focused page index (default: `0`)                           |
+| nearCardSpacing        | double                       | Spacing for adjacent cards (default: `45`)                          |
+| farCardSpacing         | double                       | Spacing for distant cards (default: `50`)                           |
+| skewAngle              | double                       | Card rotation angle (default: `-0.35`)                              |
+| perspective            | double                       | 3D perspective intensity (default: `0.0025`)                        |
+| obscure                | double                       | Blur intensity for side cards (default: `0`)                        |
+| controller             | CoverflowCarouselController? | External carousel controller                                        |
+| animationDuration      | Duration                     | Navigation animation duration (default: `350ms`)                    |
+| animationCurve         | Curve                        | Navigation animation curve (default: `Curves.easeOutCubic`)         |
+| viewportFraction       | double                       | PageView swipe sensitivity and width ratio (default: `0.25`)        |
+| isInfinite             | bool                         | Enable circular scrolling loop (default: `false`)                   |
+| entryAnimation         | CoverflowEntryAnimation      | Entrance animation type (default: `.none`)                          |
+| entryAnimationDuration | Duration                     | Entrance animation duration (default: `600ms`)                      |
+| entryAnimationCurve    | Curve                        | Entrance animation curve (default: `Curves.easeOutCubic`)           |
 
 ---
 

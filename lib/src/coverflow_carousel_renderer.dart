@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'card_model.dart';
+import 'coverflow_carousel.dart';
 
 class CoverflowCarouselRenderer extends StatelessWidget {
   final int itemCount;
@@ -19,6 +20,9 @@ class CoverflowCarouselRenderer extends StatelessWidget {
   final Duration animationDuration;
   final Curve animationCurve;
   final bool isInfinite;
+  final CoverflowEntryAnimation entryAnimation;
+  final double entryProgress;
+  final int initialPage;
 
   const CoverflowCarouselRenderer({
     super.key,
@@ -38,20 +42,29 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     required this.visibleItems,
     required this.perspective,
     required this.isInfinite,
+    required this.entryAnimation,
+    required this.entryProgress,
+    required this.initialPage,
   });
 
   double getCardPosition(int index) {
     final center = maxWidth / 2;
-
     final distance = index - centerIndex;
 
+    final spacingFactor =
+        entryAnimation == CoverflowEntryAnimation.spacingExpand
+        ? entryProgress
+        : 1.0;
+    final nearSpacing = nearCardSpacing * spacingFactor;
+    final farSpacing = farCardSpacing * spacingFactor;
+
     if (distance.abs() <= 1) {
-      return center + distance * nearCardSpacing;
+      return center + distance * nearSpacing;
     }
 
     return center +
-        distance.sign * nearCardSpacing +
-        distance.sign * (distance.abs() - 1) * farCardSpacing;
+        distance.sign * nearSpacing +
+        distance.sign * (distance.abs() - 1) * farSpacing;
   }
 
   double getCardWidth(int index) {
@@ -101,6 +114,69 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     final verticalPadding = width * 0.05 * distance;
     final bool isCentered = index == centerIndex.round();
 
+    final double cardProgress;
+    if (entryAnimation == CoverflowEntryAnimation.none) {
+      cardProgress = 1.0;
+    } else if (entryAnimation == CoverflowEntryAnimation.stack) {
+      final double maxDistance = visibleItems.toDouble();
+      final double intervals = maxDistance > 0 ? maxDistance + 1 : 1.0;
+      final double intervalWidth = 1.0 / intervals;
+      final double distance = (initialPage - index).abs().toDouble().clamp(0.0, maxDistance);
+      final double start = distance * intervalWidth;
+      final double end = start + intervalWidth;
+
+      if (entryProgress <= start) {
+        cardProgress = 0.0;
+      } else if (entryProgress >= end) {
+        cardProgress = 1.0;
+      } else {
+        cardProgress = (entryProgress - start) / intervalWidth;
+      }
+    } else {
+      final double staggerDistance = (initialPage - index).abs().toDouble();
+      final double start = (staggerDistance * 0.15).clamp(0.0, 0.75);
+      const double end = 1.0;
+      if (entryProgress <= start) {
+        cardProgress = 0.0;
+      } else if (entryProgress >= end) {
+        cardProgress = 1.0;
+      } else {
+        cardProgress = (entryProgress - start) / (end - start);
+      }
+    }
+
+    double opacity = 1.0;
+    double scale = 1.0;
+    double translateX = 0.0;
+    double translateY = 0.0;
+
+    if (entryAnimation != CoverflowEntryAnimation.none) {
+      if (entryAnimation == CoverflowEntryAnimation.fadeIn ||
+          entryAnimation == CoverflowEntryAnimation.fadeScale) {
+        opacity = cardProgress;
+      }
+      if (entryAnimation == CoverflowEntryAnimation.scaleUp ||
+          entryAnimation == CoverflowEntryAnimation.fadeScale) {
+        scale = 0.8 + (0.2 * cardProgress);
+      }
+      if (entryAnimation == CoverflowEntryAnimation.staggeredSlide) {
+        opacity = cardProgress;
+        if (index == initialPage) {
+          translateY = -50.0 * (1.0 - cardProgress);
+        } else if (index < initialPage) {
+          translateX = -150.0 * (1.0 - cardProgress);
+        } else {
+          translateX = 150.0 * (1.0 - cardProgress);
+        }
+      }
+      if (entryAnimation == CoverflowEntryAnimation.stack) {
+        scale = 1.8 - (0.8 * cardProgress);
+        opacity = (cardProgress * 2.0).clamp(0.0, 1.0);
+        translateX = 0.0;
+        translateY = 0.0;
+      }
+    }
+
     return Positioned(
       left: position - width / 2,
       child: GestureDetector(
@@ -113,35 +189,46 @@ class CoverflowCarouselRenderer extends StatelessWidget {
                 );
               }
             : null,
-        child: Transform(
-          alignment: Alignment.center,
-          transform: getTransform(index),
-          child: Stack(
-            children: [
-              Container(
-                width: width,
-                height: height,
-                padding: EdgeInsets.symmetric(vertical: verticalPadding),
-                child: AbsorbPointer(
-                  absorbing: !isCentered,
-                  child: child,
+        child: Opacity(
+          opacity: opacity,
+          child: Transform.translate(
+            offset: Offset(translateX, translateY),
+            child: Transform.scale(
+              scale: scale,
+              child: Transform(
+                alignment: Alignment.center,
+                transform: getTransform(index),
+                child: Stack(
+                  children: [
+                    Container(
+                      width: width,
+                      height: height,
+                      padding: EdgeInsets.symmetric(vertical: verticalPadding),
+                      child: AbsorbPointer(
+                        absorbing: !isCentered,
+                        child: child,
+                      ),
+                    ),
+
+                    if (obscure > 0 && distance > 0)
+                      Container(
+                        width: width,
+                        height: height,
+                        padding: EdgeInsets.symmetric(
+                          vertical: verticalPadding,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: BackdropFilter(
+                            filter: getFilter(index),
+                            child: Container(),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-
-              if (obscure > 0 && distance > 0)
-                Container(
-                  width: width,
-                  height: height,
-                  padding: EdgeInsets.symmetric(vertical: verticalPadding),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: BackdropFilter(
-                      filter: getFilter(index),
-                      child: Container(),
-                    ),
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
       ),
@@ -164,12 +251,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
       }
 
       final realIndex = ((i % itemCount) + itemCount) % itemCount;
-      cards.add(
-        CardModel(
-          id: i,
-          child: itemBuilder(context, realIndex),
-        ),
-      );
+      cards.add(CardModel(id: i, child: itemBuilder(context, realIndex)));
     }
 
     for (final card in cards) {
@@ -182,7 +264,9 @@ class CoverflowCarouselRenderer extends StatelessWidget {
 
     cards.sort((a, b) => a.zIndex.compareTo(b.zIndex));
 
-    return cards.map((card) => buildCard(context, card.id, card.child)).toList();
+    return cards
+        .map((card) => buildCard(context, card.id, card.child))
+        .toList();
   }
 
   @override

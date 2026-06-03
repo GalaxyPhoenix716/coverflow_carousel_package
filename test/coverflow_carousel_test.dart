@@ -331,4 +331,33 @@ void main() {
     expect(find.text('A'), findsOneWidget);
     expect(find.text('B'), findsOneWidget);
   });
+
+  testWidgets('CoverflowCarousel entry animations build successfully and progress',
+      (WidgetTester tester) async {
+    for (final animation in CoverflowEntryAnimation.values) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CoverflowCarousel.builder(
+              key: UniqueKey(),
+              itemCount: 5,
+              itemWidth: 200,
+              itemHeight: 300,
+              entryAnimation: animation,
+              entryAnimationDuration: const Duration(milliseconds: 100),
+              itemBuilder: (context, index) {
+                return Text('Item $index');
+              },
+            ),
+          ),
+        ),
+      );
+
+      // Verify the widget tree builds correctly for this animation
+      expect(find.text('Item 0'), findsOneWidget);
+
+      // Let the entry animation complete
+      await tester.pumpAndSettle();
+    }
+  });
 }
