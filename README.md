@@ -58,7 +58,7 @@ flutter pub get
 ## Basic Usage
 
 ```dart
-OverlappedCarousel.builder(
+CoverflowCarousel.builder(
     itemCount: 10, itemWidth: 250,
     itemHeight: 320,
     itemBuilder: (context, index) {
@@ -77,11 +77,11 @@ OverlappedCarousel.builder(
 Control the carousel from anywhere in your application.
 
 ```dart
-final controller = OverlappedCarouselController();
+final controller = CoverflowCarouselController();
 ```
 
 ```dart
-OverlappedCarousel.builder(
+CoverflowCarousel.builder(
   controller: controller,
   itemCount: items.length,
   itemWidth: 250,
