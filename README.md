@@ -38,7 +38,7 @@ Add the package to your `pubspec.yaml`.
 
 ```yaml
 dependencies:
-  overlapped_carousel: ^1.0.0
+  coverflow_carousel: ^1.0.0
 ```
 
 OR
