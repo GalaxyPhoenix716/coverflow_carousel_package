@@ -5,18 +5,19 @@ import 'coverflow_carousel_renderer.dart';
 class CoverflowCarousel extends StatefulWidget {
   final int itemCount;
   final IndexedWidgetBuilder itemBuilder;
+  final int visibleItems;
+  final int initialPage;
   final double itemWidth;
   final double itemHeight;
-  final int visibleItems;
   final double obscure;
   final double skewAngle;
-  final int initialPage;
-  final ValueChanged<int>? onPageChanged;
-  final CoverflowCarouselController? controller;
   final double nearCardSpacing;
   final double farCardSpacing;
+  final double perspective;
   final Duration animationDuration;
   final Curve animationCurve;
+  final CoverflowCarouselController? controller;
+  final ValueChanged<int>? onPageChanged;
 
   const CoverflowCarousel.builder({
     super.key,
@@ -31,6 +32,7 @@ class CoverflowCarousel extends StatefulWidget {
     this.onPageChanged,
     this.nearCardSpacing = 45,
     this.farCardSpacing = 50,
+    this.perspective = 0.0025,
     this.animationDuration = const Duration(milliseconds: 350),
     this.animationCurve = Curves.easeOutCubic,
     this.controller,
@@ -145,6 +147,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
                   skewAngle: widget.skewAngle,
                   nearCardSpacing: widget.nearCardSpacing,
                   farCardSpacing: widget.farCardSpacing,
+                  perspective: widget.perspective,
                   animationDuration: widget.animationDuration,
                   animationCurve: widget.animationCurve,
                 );

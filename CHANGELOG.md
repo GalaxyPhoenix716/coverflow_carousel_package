@@ -1,35 +1,23 @@
 ## 0.0.1
 
-Smooth 3D coverflow-style carousel experience.
+✨ Smooth 3D coverflow-style carousel
 
-Interactive card navigation with swipe gestures.
+✨ Customizable card dimensions
 
-Tap any card to instantly bring it into focus.
+✨ Adjustable overlap and spacing
 
-Customizable card sizing to fit different app designs.
+✨ Perspective and rotation effects
 
-Adjustable card overlap for compact or spacious layouts.
+✨ Smooth swipe navigation
 
-Multiple visible cards on both sides of the focused item.
+✨ Controller support
 
-Dynamic depth and perspective effects for a premium visual experience.
+✨ Programmatic navigation
 
-Smooth animated transitions between carousel items.
+✨ Blur effects for non-focused cards
 
-Customizable scrolling and snapping behavior.
+✨ Responsive layout
 
-Support for large datasets with smooth performance.
+✨ Optimized rendering for large datasets
 
-Flexible item rendering for images, music covers, movies, products, and more.
-
-External controller support for programmatic navigation.
-
-Navigate to next, previous, or specific items from anywhere in the app.
-
-Configurable visual depth and rotation effects.
-
-Optional blur effect for non-focused items.
-
-Highly customizable appearance to match different design systems.
-
-Responsive layout that adapts to different screen sizes.
+✨ Builder-based API
