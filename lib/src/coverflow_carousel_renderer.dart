@@ -34,7 +34,8 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     required this.controller,
     required this.animationDuration,
     required this.animationCurve,
-    required this.visibleItems, required this.perspective,
+    required this.visibleItems,
+    required this.perspective,
   });
 
   double getCardPosition(int index) {
@@ -96,34 +97,47 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     );
     final position = getCardPosition(index);
     final verticalPadding = width * 0.05 * distance;
+    final bool isCentered = index == centerIndex.round();
 
     return Positioned(
       left: position - width / 2,
-      child: Transform(
-        alignment: Alignment.center,
-        transform: getTransform(index),
-        child: Stack(
-          children: [
-            Container(
-              width: width,
-              height: height,
-              padding: EdgeInsets.symmetric(vertical: verticalPadding),
-              child: itemBuilder(context, index),
-            ),
-      
-            Container(
-              width: width,
-              height: height,
-              padding: EdgeInsets.symmetric(vertical: verticalPadding),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: BackdropFilter(
-                  filter: getFilter(index),
-                  child: Container(),
-                ),
+      child: GestureDetector(
+        onTap: !isCentered
+            ? () {
+                controller.animateToPage(
+                  index,
+                  duration: animationDuration,
+                  curve: animationCurve,
+                );
+              }
+            : null,
+        child: Transform(
+          alignment: Alignment.center,
+          transform: getTransform(index),
+          child: Stack(
+            children: [
+              Container(
+                width: width,
+                height: height,
+                padding: EdgeInsets.symmetric(vertical: verticalPadding),
+                child: itemBuilder(context, index),
               ),
-            ),
-          ],
+
+              if (obscure > 0 && distance > 0)
+                Container(
+                  width: width,
+                  height: height,
+                  padding: EdgeInsets.symmetric(vertical: verticalPadding),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: BackdropFilter(
+                      filter: getFilter(index),
+                      child: Container(),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'coverflow_carousel_controller.dart';
 import 'coverflow_carousel_renderer.dart';
 
@@ -18,6 +19,7 @@ class CoverflowCarousel extends StatefulWidget {
   final Curve animationCurve;
   final CoverflowCarouselController? controller;
   final ValueChanged<int>? onPageChanged;
+  final double viewportFraction;
 
   const CoverflowCarousel.builder({
     super.key,
@@ -36,6 +38,7 @@ class CoverflowCarousel extends StatefulWidget {
     this.animationDuration = const Duration(milliseconds: 350),
     this.animationCurve = Curves.easeOutCubic,
     this.controller,
+    this.viewportFraction = 0.25,
   });
 
   @override
@@ -43,7 +46,7 @@ class CoverflowCarousel extends StatefulWidget {
 }
 
 class _CoverflowCarouselState extends State<CoverflowCarousel> {
-  late final PageController _controller;
+  late PageController _controller;
   late double currentPage;
   int _lastReportedPage = -1;
 
@@ -52,25 +55,26 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
     super.initState();
     currentPage = widget.initialPage.toDouble();
     _controller = PageController(
-      viewportFraction: 0.25,
+      viewportFraction: widget.viewportFraction,
       initialPage: widget.initialPage,
     );
 
-    _controller.addListener(() {
-      final page = _controller.page ?? 0;
-      setState(() {
-        currentPage = page;
-      });
+    _controller.addListener(_pageListener);
+    _attachController();
+  }
 
-      final rounded = page.round();
-
-      if (rounded != _lastReportedPage) {
-        _lastReportedPage = rounded;
-        widget.onPageChanged?.call(rounded);
-      }
+  void _pageListener() {
+    final page = _controller.page ?? 0;
+    setState(() {
+      currentPage = page;
     });
 
-    _attachController();
+    final rounded = page.round();
+
+    if (rounded != _lastReportedPage) {
+      _lastReportedPage = rounded;
+      widget.onPageChanged?.call(rounded);
+    }
   }
 
   @override
@@ -79,7 +83,20 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
 
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller?.detach();
+      _attachController();
+    }
 
+    if (oldWidget.viewportFraction != widget.viewportFraction) {
+      final currentPageIndex = _controller.positions.isNotEmpty
+          ? _controller.page?.round() ?? widget.initialPage
+          : widget.initialPage;
+      _controller.removeListener(_pageListener);
+      _controller.dispose();
+      _controller = PageController(
+        viewportFraction: widget.viewportFraction,
+        initialPage: currentPageIndex,
+      );
+      _controller.addListener(_pageListener);
       _attachController();
     }
   }
@@ -126,33 +143,39 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
           PageView.builder(
             controller: _controller,
             itemCount: widget.itemCount,
+            scrollBehavior: const ScrollBehavior().copyWith(
+              dragDevices: {
+                PointerDeviceKind.touch,
+                PointerDeviceKind.mouse,
+                PointerDeviceKind.trackpad,
+                PointerDeviceKind.stylus,
+              },
+            ),
             itemBuilder: (_, _) {
               return const SizedBox.shrink();
             },
           ),
 
-          IgnorePointer(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return CoverflowCarouselRenderer(
-                  controller: _controller,
-                  centerIndex: currentPage,
-                  maxWidth: constraints.maxWidth,
-                  itemWidth: widget.itemWidth,
-                  itemHeight: widget.itemHeight,
-                  itemCount: widget.itemCount,
-                  visibleItems: widget.visibleItems,
-                  itemBuilder: widget.itemBuilder,
-                  obscure: widget.obscure,
-                  skewAngle: widget.skewAngle,
-                  nearCardSpacing: widget.nearCardSpacing,
-                  farCardSpacing: widget.farCardSpacing,
-                  perspective: widget.perspective,
-                  animationDuration: widget.animationDuration,
-                  animationCurve: widget.animationCurve,
-                );
-              },
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return CoverflowCarouselRenderer(
+                controller: _controller,
+                centerIndex: currentPage,
+                maxWidth: constraints.maxWidth,
+                itemWidth: widget.itemWidth,
+                itemHeight: widget.itemHeight,
+                itemCount: widget.itemCount,
+                visibleItems: widget.visibleItems,
+                itemBuilder: widget.itemBuilder,
+                obscure: widget.obscure,
+                skewAngle: widget.skewAngle,
+                nearCardSpacing: widget.nearCardSpacing,
+                farCardSpacing: widget.farCardSpacing,
+                perspective: widget.perspective,
+                animationDuration: widget.animationDuration,
+                animationCurve: widget.animationCurve,
+              );
+            },
           ),
         ],
       ),
