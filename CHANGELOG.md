@@ -36,3 +36,5 @@
 6. **Custom Viewport Fraction**: Added `viewportFraction` property supporting dynamic hot updates.
 7. **Optimized BackdropFilter**: Blur filters are only drawn when active, improving GPU rendering.
 8. **Testing**: Built a full suite of 10 widget tests verifying layouts, gestures, entry transitions, and controllers.
+9. **Code Documentation**: Added 100% pub.dev public API coverage with detailed Dart doc comments (`///`) on all classes, properties, constructors, methods, and enums.
+10. **Architecture & Mathematics Reference**: Added `package_documentation.md` containing detailed 3D transform projection matrices, spacing equations, gesture layers, and timeline stagger formulas.
