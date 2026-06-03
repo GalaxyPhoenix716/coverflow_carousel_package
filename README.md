@@ -1,39 +1,196 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# Coverflow Carousel
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+A beautiful, highly customizable 3D coverflow-style carousel for Flutter.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+Create immersive experiences with smooth perspective effects, overlapping cards, dynamic scaling, and effortless programmatic navigation.
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Perfect for music apps, movie browsers, ecommerce showcases, galleries, portfolios, and modern mobile interfaces.
 
-## Features
+---
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+## ✨ Features
 
-## Getting started
+- 🎨 Smooth 3D coverflow-style design
+- 📱 Responsive across different screen sizes
+- 🔄 Swipe-based navigation
+- 🏗️ Builder-based API for optimal performance
+- 📏 Fully customizable card dimensions
+- 📐 Adjustable overlap and spacing
+- 🌊 Smooth animations and transitions
+- 🧊 Optional blur effects for side cards
+- 🎯 Configurable visible card count
+- 🔀 Adjustable perspective and rotation
+- 🎮 External controller support
+- ⚡ Optimized rendering for large datasets
+- ♻️ Reusable and production-ready
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+## 📸 Preview
 
-## Usage
+<!-- <p align="center">
+  <img src="assets/demo.gif" width="350" alt="Overlapped Carousel Demo">
+</p> -->
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+---
 
-```dart
-const like = 'sample';
+## 🚀 Installation
+
+Add the package to your `pubspec.yaml`.
+
+```yaml
+dependencies:
+  overlapped_carousel: ^1.0.0
 ```
 
-## Additional information
+OR
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+Run the command in the terminal in your project root
+
+```
+flutter pub add coverflow_carousel
+```
+
+Then run:
+
+```
+flutter pub get
+```
+
+## Basic Usage
+
+```dart
+OverlappedCarousel.builder(
+    itemCount: 10, itemWidth: 250,
+    itemHeight: 320,
+    itemBuilder: (context, index) {
+        return Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                color: Colors.blue,
+            ),
+        );
+    },
+)
+```
+
+## Controller Support
+
+Control the carousel from anywhere in your application.
+
+```dart
+final controller = OverlappedCarouselController();
+```
+
+```dart
+OverlappedCarousel.builder(
+  controller: controller,
+  itemCount: items.length,
+  itemWidth: 250,
+  itemHeight: 320,
+  itemBuilder: (context, index) {
+    return MyCard(index: index);
+  },
+)
+```
+
+Navigate Programatically
+
+```dart
+controller.next();
+
+controller.previous();
+
+controller.animateTo(5);
+```
+
+## ⚙️ Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| itemCount | int | Number of carousel items |
+| itemBuilder | IndexedWidgetBuilder | Builds each carousel item |
+| itemWidth | double | Width of the focused card |
+| itemHeight | double | Height of the focused card |
+| visibleDistance | double | Number of visible cards around the focused item |
+| nearCardSpacing | double | Spacing for adjacent cards |
+| farCardSpacing | double | Spacing for distant cards |
+| skewAngle | double | Card rotation angle |
+| perspective | double | 3D perspective intensity |
+| obscure | double | Blur intensity for side cards |
+| controller | OverlappedCarouselController? | External carousel controller |
+| animationDuration | Duration | Navigation animation duration |
+| animationCurve | Curve | Navigation animation curve |
+
+---
+
+## 💡 Perfect For
+
+- 🎵 Music Applications
+- 🎬 Movie & Streaming Platforms
+- 🛍️ Ecommerce Product Showcases
+- 🖼️ Galleries & Portfolios
+- ✈️ Travel Applications
+- 📚 Educational Apps
+- 🎮 Gaming Interfaces
+- 📱 Modern Mobile Experiences
+
+---
+
+## 🏆 Why Coverflow Carousel?
+
+Unlike traditional carousels, Coverflow Carousel creates depth and focus through:
+
+- 3D perspective transformations
+- Dynamic card scaling
+- Adjustable overlap layouts
+- Smooth animations
+- Responsive sizing
+- Programmatic navigation
+
+The result is a premium browsing experience that feels modern, immersive, and intuitive.
+
+---
+
+## Additional Information
+
+Overlapped Carousel is designed to provide a beautiful and highly customizable 3D coverflow-style carousel experience for Flutter applications.
+
+### Issues & Bug Reports
+
+If you encounter a bug or unexpected behavior, please open an issue with:
+
+- Flutter version
+- Package version
+- Steps to reproduce
+- Expected behavior
+- Screenshots or recordings (if applicable)
+
+### Feature Requests
+
+Suggestions and feature requests are always welcome. If you have an idea that could improve the package, feel free to create an issue describing the use case and proposed solution.
+
+### Contributing
+
+Contributions are welcome. Whether it's fixing bugs, improving documentation, optimizing performance, or adding new features, pull requests are appreciated.
+
+Before submitting a pull request:
+
+1. Ensure the code follows Dart and Flutter best practices.
+2. Test your changes thoroughly.
+3. Update documentation when necessary.
+4. Add examples for new features.
+
+### Support
+
+For questions, issues, or suggestions, please use the project's GitHub Issues page.
+
+### Future Development
+
+Planned improvements include:
+
+- Infinite scrolling
+- Entry animations
+- Additional customization options
+- More visual effects
+- Performance optimizations
+
+Thank you for using Coverflow Carousel!
