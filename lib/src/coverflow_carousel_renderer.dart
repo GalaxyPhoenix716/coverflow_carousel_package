@@ -120,7 +120,10 @@ class CoverflowCarouselRenderer extends StatelessWidget {
                 width: width,
                 height: height,
                 padding: EdgeInsets.symmetric(vertical: verticalPadding),
-                child: itemBuilder(context, index),
+                child: AbsorbPointer(
+                  absorbing: !isCentered,
+                  child: itemBuilder(context, index),
+                ),
               ),
 
               if (obscure > 0 && distance > 0)
