@@ -1,7 +1,7 @@
 name: coverflow_carousel
 description: "A new Flutter package project."
 version: 0.0.1
-homepage:
+homepage: https://github.com/GalaxyPhoenix716/coverflow_carousel_package
 
 environment:
   sdk: ^3.11.3
