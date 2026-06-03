@@ -27,7 +27,7 @@ Perfect for music apps, movie browsers, ecommerce showcases, galleries, portfoli
 ## 📸 Preview
 
 <p align="center">
-  <img src="assets/coverflow_carousel_demo.gif" width="350" alt="Coverflow Carousel Demo">
+  <img src="https://raw.githubusercontent.com/GalaxyPhoenix716/coverflow_carousel_package/main/assets/coverflow_carousel_demo.gif" width="350" alt="Coverflow Carousel Demo">
 </p>
 
 ---
@@ -104,21 +104,21 @@ controller.animateTo(5);
 
 ## ⚙️ Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| itemCount | int | Number of carousel items |
-| itemBuilder | IndexedWidgetBuilder | Builds each carousel item |
-| itemWidth | double | Width of the focused card |
-| itemHeight | double | Height of the focused card |
-| visibleDistance | double | Number of visible cards around the focused item |
-| nearCardSpacing | double | Spacing for adjacent cards |
-| farCardSpacing | double | Spacing for distant cards |
-| skewAngle | double | Card rotation angle |
-| perspective | double | 3D perspective intensity |
-| obscure | double | Blur intensity for side cards |
-| controller | CoverflowCarouselController? | External carousel controller |
-| animationDuration | Duration | Navigation animation duration |
-| animationCurve | Curve | Navigation animation curve |
+| Parameter         | Type                         | Description                                     |
+| ----------------- | ---------------------------- | ----------------------------------------------- |
+| itemCount         | int                          | Number of carousel items                        |
+| itemBuilder       | IndexedWidgetBuilder         | Builds each carousel item                       |
+| itemWidth         | double                       | Width of the focused card                       |
+| itemHeight        | double                       | Height of the focused card                      |
+| visibleDistance   | double                       | Number of visible cards around the focused item |
+| nearCardSpacing   | double                       | Spacing for adjacent cards                      |
+| farCardSpacing    | double                       | Spacing for distant cards                       |
+| skewAngle         | double                       | Card rotation angle                             |
+| perspective       | double                       | 3D perspective intensity                        |
+| obscure           | double                       | Blur intensity for side cards                   |
+| controller        | CoverflowCarouselController? | External carousel controller                    |
+| animationDuration | Duration                     | Navigation animation duration                   |
+| animationCurve    | Curve                        | Navigation animation curve                      |
 
 ---
 
