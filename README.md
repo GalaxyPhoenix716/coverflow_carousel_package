@@ -26,9 +26,9 @@ Perfect for music apps, movie browsers, ecommerce showcases, galleries, portfoli
 
 ## 📸 Preview
 
-<!-- <p align="center">
-  <img src="assets/demo.gif" width="350" alt="Overlapped Carousel Demo">
-</p> -->
+<p align="center">
+  <img src="assets/coverflow_carousel_demo.gif" width="350" alt="Coverflow Carousel Demo">
+</p>
 
 ---
 
