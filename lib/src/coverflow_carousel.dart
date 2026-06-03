@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'dart:ui';
 import 'coverflow_carousel_controller.dart';
 import 'coverflow_carousel_renderer.dart';
@@ -157,7 +158,6 @@ class CoverflowCarousel extends StatefulWidget {
   @override
   State<CoverflowCarousel> createState() => _CoverflowCarouselState();
 }
-
 
 class _CoverflowCarouselState extends State<CoverflowCarousel>
     with SingleTickerProviderStateMixin {
@@ -328,59 +328,63 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
           ),
 
           if (widget.entryAnimation == CoverflowEntryAnimation.none)
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return CoverflowCarouselRenderer(
-                  controller: _controller,
-                  centerIndex: currentPage,
-                  maxWidth: constraints.maxWidth,
-                  itemWidth: widget.itemWidth,
-                  itemHeight: widget.itemHeight,
-                  itemCount: widget.itemCount,
-                  visibleItems: widget.visibleItems,
-                  itemBuilder: widget.itemBuilder,
-                  obscure: widget.obscure,
-                  skewAngle: widget.skewAngle,
-                  nearCardSpacing: widget.nearCardSpacing,
-                  farCardSpacing: widget.farCardSpacing,
-                  perspective: widget.perspective,
-                  animationDuration: widget.animationDuration,
-                  animationCurve: widget.animationCurve,
-                  isInfinite: widget.isInfinite,
-                  entryAnimation: CoverflowEntryAnimation.none,
-                  entryProgress: 1.0,
-                  initialPage: _initialVirtualPage,
-                );
-              },
+            _CoverflowGesturePassThrough(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return CoverflowCarouselRenderer(
+                    controller: _controller,
+                    centerIndex: currentPage,
+                    maxWidth: constraints.maxWidth,
+                    itemWidth: widget.itemWidth,
+                    itemHeight: widget.itemHeight,
+                    itemCount: widget.itemCount,
+                    visibleItems: widget.visibleItems,
+                    itemBuilder: widget.itemBuilder,
+                    obscure: widget.obscure,
+                    skewAngle: widget.skewAngle,
+                    nearCardSpacing: widget.nearCardSpacing,
+                    farCardSpacing: widget.farCardSpacing,
+                    perspective: widget.perspective,
+                    animationDuration: widget.animationDuration,
+                    animationCurve: widget.animationCurve,
+                    isInfinite: widget.isInfinite,
+                    entryAnimation: CoverflowEntryAnimation.none,
+                    entryProgress: 1.0,
+                    initialPage: _initialVirtualPage,
+                  );
+                },
+              ),
             )
           else
             AnimatedBuilder(
               animation: _entryAnimation!,
               builder: (context, child) {
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    return CoverflowCarouselRenderer(
-                      controller: _controller,
-                      centerIndex: currentPage,
-                      maxWidth: constraints.maxWidth,
-                      itemWidth: widget.itemWidth,
-                      itemHeight: widget.itemHeight,
-                      itemCount: widget.itemCount,
-                      visibleItems: widget.visibleItems,
-                      itemBuilder: widget.itemBuilder,
-                      obscure: widget.obscure,
-                      skewAngle: widget.skewAngle,
-                      nearCardSpacing: widget.nearCardSpacing,
-                      farCardSpacing: widget.farCardSpacing,
-                      perspective: widget.perspective,
-                      animationDuration: widget.animationDuration,
-                      animationCurve: widget.animationCurve,
-                      isInfinite: widget.isInfinite,
-                      entryAnimation: widget.entryAnimation,
-                      entryProgress: _entryAnimation!.value,
-                      initialPage: _initialVirtualPage,
-                    );
-                  },
+                return _CoverflowGesturePassThrough(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return CoverflowCarouselRenderer(
+                        controller: _controller,
+                        centerIndex: currentPage,
+                        maxWidth: constraints.maxWidth,
+                        itemWidth: widget.itemWidth,
+                        itemHeight: widget.itemHeight,
+                        itemCount: widget.itemCount,
+                        visibleItems: widget.visibleItems,
+                        itemBuilder: widget.itemBuilder,
+                        obscure: widget.obscure,
+                        skewAngle: widget.skewAngle,
+                        nearCardSpacing: widget.nearCardSpacing,
+                        farCardSpacing: widget.farCardSpacing,
+                        perspective: widget.perspective,
+                        animationDuration: widget.animationDuration,
+                        animationCurve: widget.animationCurve,
+                        isInfinite: widget.isInfinite,
+                        entryAnimation: widget.entryAnimation,
+                        entryProgress: _entryAnimation!.value,
+                        initialPage: _initialVirtualPage,
+                      );
+                    },
+                  ),
                 );
               },
             ),
@@ -408,5 +412,29 @@ class _CoverflowScrollBehavior extends ScrollBehavior {
     ScrollableDetails details,
   ) {
     return child;
+  }
+}
+
+/// Custom render object widget that intercepts gestures but allows them to fall through
+/// to stack layers underneath.
+///
+/// Hit-tests children and registers them in the gesture system (allowing buttons and
+/// taps to work), but returns false on hit-testing so sibling overlay widgets (like
+/// the underlying swiping PageView) can still receive drag events.
+class _CoverflowGesturePassThrough extends SingleChildRenderObjectWidget {
+  const _CoverflowGesturePassThrough({required Widget child})
+    : super(child: child);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return _RenderCoverflowGesturePassThrough();
+  }
+}
+
+class _RenderCoverflowGesturePassThrough extends RenderProxyBox {
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    hitTestChildren(result, position: position);
+    return false;
   }
 }

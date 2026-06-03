@@ -29,9 +29,28 @@ To leverage Flutter's native, highly optimized physics engine for scrolling, dra
    - Its primary purpose is to maintain a `PageController` and translate swipe velocities into a continuous fractional offset (`centerIndex`).
 
 2. **The Rendering Stack (Overlay)**:
-   Contains the `CoverflowCarouselRenderer`.
+   Contains the `CoverflowCarouselRenderer` wrapped in a custom `_CoverflowGesturePassThrough` wrapper.
    - Listens to the `PageController` page updates and rebuilds on change.
    - Draws a list of custom-positioned `Transform` widgets in a `Stack` based on the current `centerIndex`.
+
+#### 1.1.1 Gesture Pass-Through Overlay (RenderProxyBox)
+In standard Flutter hit-testing, siblings in a `Stack` are hit-tested from top to bottom. If a widget in the top child (the 3D renderer cards) hit-tests successfully, the parent `Stack` immediately stops hit-testing, blocking the bottom child (`PageView`) from receiving any drag/swipe gestures over that region.
+
+To resolve this and allow swiping directly over the cards, we wrap the rendering stack in a custom `_CoverflowGesturePassThrough` widget. This class extends `SingleChildRenderObjectWidget` and overrides `hitTest` on its corresponding `RenderProxyBox`:
+
+```dart
+class _RenderCoverflowGesturePassThrough extends RenderProxyBox {
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    hitTestChildren(result, position: position);
+    return false;
+  }
+}
+```
+
+- **How it works**: By calling `hitTestChildren`, it still traverses the cards, allowing card taps, gestures, and button presses to be registered in the hit-test path.
+- **Passing through**: By returning `false` from `hitTest` itself, it signals to the parent `Stack` that the top layer was not hit. This forces the `Stack` to continue hit-testing the `PageView` underneath.
+- **Coexistence**: As a result, both the interactive card widgets and the scrollable `PageView` receive the pointer events. Taps go to the cards, and drags go to scroll the `PageView` smoothly.
 
 ### 1.2 Infinite Scroll Mapping
 
