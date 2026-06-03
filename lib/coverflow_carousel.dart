@@ -1,3 +1,5 @@
+library coverflow_carousel;
+
 import 'package:coverflow_carousel/coverflow_carousel_controller.dart';
 import 'package:coverflow_carousel/coverflow_carousel_renderer.dart';
 import 'package:flutter/material.dart';
