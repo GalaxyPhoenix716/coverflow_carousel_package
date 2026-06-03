@@ -1,6 +1,6 @@
-import 'package:coverflow_carousel/src/coverflow_carousel_controller.dart';
-import 'package:coverflow_carousel/src/coverflow_carousel_renderer.dart';
 import 'package:flutter/material.dart';
+import 'coverflow_carousel_controller.dart';
+import 'coverflow_carousel_renderer.dart';
 
 class CoverflowCarousel extends StatefulWidget {
   final int itemCount;

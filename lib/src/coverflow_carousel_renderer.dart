@@ -1,5 +1,5 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'card_model.dart';
 
 class CoverflowCarouselRenderer extends StatelessWidget {
