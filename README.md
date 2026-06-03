@@ -152,7 +152,7 @@ The result is a premium browsing experience that feels modern, immersive, and in
 
 ## Additional Information
 
-Overlapped Carousel is designed to provide a beautiful and highly customizable 3D coverflow-style carousel experience for Flutter applications.
+Coverflow Carousel is designed to provide a beautiful and highly customizable 3D coverflow-style carousel experience for Flutter applications.
 
 ### ❗ Issues & Bug Reports
 
