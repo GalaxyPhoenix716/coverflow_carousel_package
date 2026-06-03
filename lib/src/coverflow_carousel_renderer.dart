@@ -3,27 +3,70 @@ import 'dart:ui';
 import 'card_model.dart';
 import 'coverflow_carousel.dart';
 
+/// The core layout rendering engine for [CoverflowCarousel].
+///
+/// Responsible for building the stacked card widget hierarchy, calculating horizontal
+/// offsets with spacing fanning, computing 3D transformation matrices (skew angle and perspective),
+/// sorting cards by depth (z-index), and applying entry animation timelines.
 class CoverflowCarouselRenderer extends StatelessWidget {
+  /// The total number of items in the carousel.
   final int itemCount;
+
+  /// Builder callback that returns the child widget representing the card at the given index.
   final IndexedWidgetBuilder itemBuilder;
+
+  /// The active scroll position as a fractional page index (e.g. `2.5` represents halfway between index 2 and index 3).
   final double centerIndex;
+
+  /// The maximum available width from the parent layout constraints.
   final double maxWidth;
+
+  /// The width of the focused center card.
   final double itemWidth;
+
+  /// The height of the focused center card.
   final double itemHeight;
+
+  /// The number of visible cards to render on each side of the active center card.
   final int visibleItems;
+
+  /// Intensity of the blur effect applied to off-center cards.
   final double obscure;
+
+  /// The rotation angle (in radians) applied to off-center cards along the Y-axis.
   final double skewAngle;
+
+  /// Horizontal spacing between the center card and the immediately adjacent cards.
   final double nearCardSpacing;
+
+  /// Horizontal spacing between adjacent background cards.
   final double farCardSpacing;
+
+  /// Perspective factor for 3D projection, modifying the matrix entry `(3, 2)`.
   final double perspective;
+
+  /// The underlying page controller used to synchronize programmatically triggered scroll animations.
   final PageController controller;
+
+  /// Duration for card transition animations.
   final Duration animationDuration;
+
+  /// Easing curve for card transition animations.
   final Curve animationCurve;
+
+  /// Whether the carousel wraps around infinitely.
   final bool isInfinite;
+
+  /// The active entry animation type.
   final CoverflowEntryAnimation entryAnimation;
+
+  /// The current progression of the entry animation, from `0.0` (start) to `1.0` (complete).
   final double entryProgress;
+
+  /// The initial virtual page index.
   final int initialPage;
 
+  /// Creates a [CoverflowCarouselRenderer] to lay out and paint the carousel cards.
   const CoverflowCarouselRenderer({
     super.key,
     required this.itemCount,
@@ -47,6 +90,11 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     required this.initialPage,
   });
 
+  /// Calculates the horizontal center position (logical pixels) for a card at [index].
+  ///
+  /// The center card sits exactly at the middle of the available viewport width.
+  /// Adjacent cards are distributed outwards using [nearCardSpacing] for the first step,
+  /// and [farCardSpacing] for subsequent steps, modified by the entry animation progress if active.
   double getCardPosition(int index) {
     final center = maxWidth / 2;
     final distance = index - centerIndex;
@@ -67,6 +115,11 @@ class CoverflowCarouselRenderer extends StatelessWidget {
         distance.sign * (distance.abs() - 1) * farSpacing;
   }
 
+  /// Calculates the scaled width of a card at [index].
+  ///
+  /// Cards shrink as they move away from the active center card.
+  /// The focused card has [itemWidth]. Immediately adjacent cards (distance = 1) shrink to 88%.
+  /// Further adjacent cards (distance >= 2) shrink to 72%. Transitions between these distances are linear.
   double getCardWidth(int index) {
     final distance = (centerIndex - index).abs();
     final centerWidth = itemWidth;
@@ -85,6 +138,10 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     return farWidth;
   }
 
+  /// Computes the 3D perspective matrix for a card at [index].
+  ///
+  /// Applies a perspective entry `(3, 2) = perspective` and rotates the card along the
+  /// Y-axis by `skewAngle * distance` (where `distance` is the layout difference `centerIndex - index`).
   Matrix4 getTransform(int index) {
     final distance = centerIndex - index;
     final transform = Matrix4.identity()
@@ -94,6 +151,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     return transform;
   }
 
+  /// Computes the blur filter applied to a card at [index] when [obscure] is enabled.
   ImageFilter getFilter(int index) {
     final distance = (centerIndex - index).abs();
 
@@ -103,6 +161,10 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     );
   }
 
+  /// Builds a single styled card widget with transformations, gesture handling, and animations.
+  ///
+  /// Handles transition gestures, entry animation timelines (scaling, slide translations, stacking fades),
+  /// 3D transformations, vertical scaling padding, and backdrop blur filters.
   Widget buildCard(BuildContext context, int index, Widget child) {
     final distance = (centerIndex - index).abs();
     final width = getCardWidth(index);
@@ -235,6 +297,13 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     );
   }
 
+  /// Evaluates which cards should be rendered and calculates their stacking order.
+  ///
+  /// Filters cards based on whether they fall within the [visibleItems] threshold.
+  /// Computes a [zIndex] for each card using:
+  /// `card.zIndex = -(centerIndex - card.id).abs()` (and `999` for the active center card).
+  /// Sorts cards ascending by [zIndex] so that background cards paint first and the center
+  /// card paints on top.
   List<Widget> buildCards(BuildContext context) {
     final centerRound = centerIndex.round();
     final cards = <CardModel>[];
@@ -278,3 +347,4 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     );
   }
 }
+

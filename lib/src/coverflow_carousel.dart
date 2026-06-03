@@ -3,38 +3,133 @@ import 'dart:ui';
 import 'coverflow_carousel_controller.dart';
 import 'coverflow_carousel_renderer.dart';
 
+/// Defines the visual entry animations available for cards when the carousel
+/// is first mounted/displayed on the screen.
 enum CoverflowEntryAnimation {
+  /// No entry animation. Cards appear in their standard layout immediately.
   none,
+
+  /// Cards fade in globally.
   fadeIn,
+
+  /// Cards scale up from 80% to 100% of their calculated sizes.
   scaleUp,
+
+  /// Card spacing starts compacted and expands outwards to their configured spacing values.
   spacingExpand,
+
+  /// Cards slide in from the edges: center card drops from above, left cards slide from the left,
+  /// and right cards slide from the right.
   staggeredSlide,
+
+  /// Cards fade in and scale up simultaneously.
   fadeScale,
+
+  /// Cards are stacked sequentially from the center card outwards to the adjacent cards.
+  /// Inside the sequence, each card animates in sequentially using a scale down from 1.8 to 1.0.
   stack,
 }
 
+/// A 3D Coverflow Carousel widget for Flutter.
+///
+/// Displays a scrollable list of cards in a 3D perspective layout where the
+/// active center card is prominent, and adjacent cards are skewed, scaled down,
+/// and layered beneath the center card.
+///
+/// Supports gesture control, mouse wheel dragging, infinite scrolling, programmatic
+/// animations via controller, card-click auto-centering, and multiple staggered entry animations.
 class CoverflowCarousel extends StatefulWidget {
+  /// The total number of items in the carousel.
   final int itemCount;
+
+  /// Builder callback that returns the widget representing the card at the given index.
+  ///
+  /// The [index] provided is mapped to a real index in `[0, itemCount - 1]`.
   final IndexedWidgetBuilder itemBuilder;
+
+  /// The number of visible cards to render on each side of the active center card.
+  ///
+  /// Setting this higher renders more background cards. Defaults to `3`.
   final int visibleItems;
+
+  /// The initial card index to focus/center.
+  ///
+  /// Must be in the range `[0, itemCount - 1]`. Defaults to `0`.
   final int initialPage;
+
+  /// The width of the focused center card.
   final double itemWidth;
+
+  /// The height of the focused center card.
   final double itemHeight;
+
+  /// Intensity of the blur effect applied to off-center cards.
+  ///
+  /// Set to `0` to disable the blur. Higher values increase blur. Defaults to `0`.
   final double obscure;
+
+  /// The rotation angle (in radians) applied to off-center cards along the Y-axis.
+  ///
+  /// Negative values tilt cards inwards, creating a coverflow folder look. Defaults to `-0.35`.
   final double skewAngle;
+
+  /// Horizontal spacing between the center card and the immediately adjacent cards (distance = 1).
+  ///
+  /// Represents logical pixels. Defaults to `45`.
   final double nearCardSpacing;
+
+  /// Horizontal spacing between adjacent background cards (distance >= 2).
+  ///
+  /// Represents logical pixels. Defaults to `50`.
   final double farCardSpacing;
+
+  /// Perspective factor for 3D projection, modifying the matrix entry `(3, 2)`.
+  ///
+  /// Defaults to `0.0025` for a realistic depth effect.
   final double perspective;
+
+  /// Duration for card transition animations (e.g., when tapping side cards or calling controller methods).
+  ///
+  /// Defaults to `350` milliseconds.
   final Duration animationDuration;
+
+  /// Easing curve for card transition animations.
+  ///
+  /// Defaults to [Curves.easeOutCubic].
   final Curve animationCurve;
+
+  /// Optional controller to programmatically drive next, previous, or jump/animateTo operations.
   final CoverflowCarouselController? controller;
+
+  /// Callback triggered whenever the active centered card index changes.
   final ValueChanged<int>? onPageChanged;
+
+  /// Fraction of the viewport occupied by each card scroll slot.
+  ///
+  /// Controls drag responsiveness and scrolling speed. Defaults to `0.25`.
   final double viewportFraction;
+
+  /// Whether the carousel should wrap around infinitely at the ends.
+  ///
+  /// If `true`, the user can scroll infinitely in both directions. Defaults to `false`.
   final bool isInfinite;
+
+  /// The entry animation to play when the carousel is first rendered.
+  ///
+  /// Defaults to [CoverflowEntryAnimation.none].
   final CoverflowEntryAnimation entryAnimation;
+
+  /// The duration of the entry animation.
+  ///
+  /// Defaults to `1000` milliseconds.
   final Duration entryAnimationDuration;
+
+  /// Easing curve applied to the entry animation.
+  ///
+  /// Defaults to [Curves.easeOutCubic].
   final Curve entryAnimationCurve;
 
+  /// Creates a Coverflow Carousel with a builder pattern.
   const CoverflowCarousel.builder({
     super.key,
     required this.itemCount,
@@ -62,6 +157,7 @@ class CoverflowCarousel extends StatefulWidget {
   @override
   State<CoverflowCarousel> createState() => _CoverflowCarouselState();
 }
+
 
 class _CoverflowCarouselState extends State<CoverflowCarousel>
     with SingleTickerProviderStateMixin {
