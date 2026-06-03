@@ -116,7 +116,7 @@ controller.animateTo(5);
 | skewAngle | double | Card rotation angle |
 | perspective | double | 3D perspective intensity |
 | obscure | double | Blur intensity for side cards |
-| controller | OverlappedCarouselController? | External carousel controller |
+| controller | CoverflowCarouselController? | External carousel controller |
 | animationDuration | Duration | Navigation animation duration |
 | animationCurve | Curve | Navigation animation curve |
 
@@ -154,7 +154,7 @@ The result is a premium browsing experience that feels modern, immersive, and in
 
 Overlapped Carousel is designed to provide a beautiful and highly customizable 3D coverflow-style carousel experience for Flutter applications.
 
-### Issues & Bug Reports
+### ❗ Issues & Bug Reports
 
 If you encounter a bug or unexpected behavior, please open an issue with:
 
@@ -164,11 +164,11 @@ If you encounter a bug or unexpected behavior, please open an issue with:
 - Expected behavior
 - Screenshots or recordings (if applicable)
 
-### Feature Requests
+### 📥 Feature Requests
 
 Suggestions and feature requests are always welcome. If you have an idea that could improve the package, feel free to create an issue describing the use case and proposed solution.
 
-### Contributing
+### 🤝 Contributing
 
 Contributions are welcome. Whether it's fixing bugs, improving documentation, optimizing performance, or adding new features, pull requests are appreciated.
 
@@ -179,11 +179,11 @@ Before submitting a pull request:
 3. Update documentation when necessary.
 4. Add examples for new features.
 
-### Support
+### ❓ Support
 
 For questions, issues, or suggestions, please use the project's GitHub Issues page.
 
-### Future Development
+### 🛠️ Future Development
 
 Planned improvements include:
 
