@@ -44,3 +44,7 @@
 
 1. **Example Application**: Added a complete, interactive, and beautifully styled example application under `example/` demonstrating infinite scroll, entry animations, blur obscuring, and programmatic controllers.
 
+# 1.1.2
+
+1. Fixed swiping on mobile applications
+
