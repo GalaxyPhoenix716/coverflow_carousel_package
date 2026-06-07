@@ -48,3 +48,9 @@
 
 1. Fixed swiping on mobile applications
 
+# 1.2.0
+
+1. **Center Card Overlay**: Added `centerOverlayBuilder` to `CoverflowCarousel.builder` allowing custom overlay widgets (such as play buttons, badges, or tags) to be stacked on the active centered card.
+2. **Smooth Fade Transition**: The center overlay automatically fades in and out smoothly using a scroll-linked opacity calculation based on the card's distance from the center.
+3. **Flexible Positioning**: Developers can use standard Flutter alignment and layout widgets (`Align`, `Positioned`, `Center`) inside the overlay builder to place the widget anywhere on the card.
+4. **Interactive Overlays**: Overlay widgets on the active centered card are fully interactive and support pointer events (like button taps/onPressed), while off-center cards redirect taps to focus the card.

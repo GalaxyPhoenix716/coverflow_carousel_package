@@ -360,4 +360,84 @@ void main() {
       await tester.pumpAndSettle();
     }
   });
+
+  testWidgets('CoverflowCarousel renders custom centerOverlayBuilder and handles clicks',
+      (WidgetTester tester) async {
+    int overlayTappedIndex = -1;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 3,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            centerOverlayBuilder: (context, index) {
+              return ElevatedButton(
+                key: Key('overlay-$index'),
+                onPressed: () {
+                  overlayTappedIndex = index;
+                },
+                child: Text('Play $index'),
+              );
+            },
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    // Centered card (index 0) overlay should exist and be clickable
+    expect(find.byKey(const Key('overlay-0')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('overlay-0')));
+    await tester.pump();
+    expect(overlayTappedIndex, 0);
+
+    // Background card (index 1) overlay should not be built since overlayOpacity is 0.0
+    expect(find.byKey(const Key('overlay-1')), findsNothing);
+  });
+
+  testWidgets('CoverflowCarousel supports direct Positioned return in centerOverlayBuilder',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 3,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            centerOverlayBuilder: (context, index) {
+              return Positioned(
+                top: 25,
+                left: 35,
+                width: 50,
+                height: 50,
+                child: Container(
+                  key: const Key('positioned-overlay'),
+                  color: Colors.red,
+                ),
+              );
+            },
+            itemBuilder: (context, index) {
+              return const SizedBox.expand();
+            },
+          ),
+        ),
+      ),
+    );
+
+    // Positioned child should exist
+    final containerFinder = find.byKey(const Key('positioned-overlay'));
+    expect(containerFinder, findsOneWidget);
+
+    // Verify its size is exactly 50x50 (it does not expand to the full 200x300 card)
+    final size = tester.getSize(containerFinder);
+    expect(size.width, 50.0);
+    expect(size.height, 50.0);
+  });
 }
+

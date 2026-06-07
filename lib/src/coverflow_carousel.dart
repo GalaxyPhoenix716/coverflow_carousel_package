@@ -130,6 +130,13 @@ class CoverflowCarousel extends StatefulWidget {
   /// Defaults to [Curves.easeOutCubic].
   final Curve entryAnimationCurve;
 
+  /// Optional builder that returns a widget to stack on top of the active centered card.
+  ///
+  /// Can be used to display play buttons, badges, controls, or overlays.
+  /// Standard positioning widgets (like [Align], [Positioned], or [Center]) can be
+  /// used within this builder to place the overlay anywhere on the card.
+  final Widget Function(BuildContext context, int index)? centerOverlayBuilder;
+
   /// Creates a Coverflow Carousel with a builder pattern.
   const CoverflowCarousel.builder({
     super.key,
@@ -153,6 +160,7 @@ class CoverflowCarousel extends StatefulWidget {
     this.entryAnimation = CoverflowEntryAnimation.none,
     this.entryAnimationDuration = const Duration(milliseconds: 1000),
     this.entryAnimationCurve = Curves.easeOutCubic,
+    this.centerOverlayBuilder,
   });
 
   @override
@@ -351,6 +359,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
                     entryAnimation: CoverflowEntryAnimation.none,
                     entryProgress: 1.0,
                     initialPage: _initialVirtualPage,
+                    centerOverlayBuilder: widget.centerOverlayBuilder,
                   );
                 },
               ),
@@ -382,6 +391,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
                         entryAnimation: widget.entryAnimation,
                         entryProgress: _entryAnimation!.value,
                         initialPage: _initialVirtualPage,
+                        centerOverlayBuilder: widget.centerOverlayBuilder,
                       );
                     },
                   ),

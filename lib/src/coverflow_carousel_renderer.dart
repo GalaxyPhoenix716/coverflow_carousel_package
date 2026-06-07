@@ -66,6 +66,9 @@ class CoverflowCarouselRenderer extends StatelessWidget {
   /// The initial virtual page index.
   final int initialPage;
 
+  /// Optional builder that returns a widget to stack on top of the active centered card.
+  final Widget Function(BuildContext context, int index)? centerOverlayBuilder;
+
   /// Creates a [CoverflowCarouselRenderer] to lay out and paint the carousel cards.
   const CoverflowCarouselRenderer({
     super.key,
@@ -88,6 +91,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     required this.entryAnimation,
     required this.entryProgress,
     required this.initialPage,
+    this.centerOverlayBuilder,
   });
 
   /// Calculates the horizontal center position (logical pixels) for a card at [index].
@@ -239,6 +243,106 @@ class CoverflowCarouselRenderer extends StatelessWidget {
       }
     }
 
+    final double overlayOpacity = (1.0 - distance).clamp(0.0, 1.0);
+    Widget cardWidget = Stack(
+      children: [
+        Container(
+          width: width,
+          height: height,
+          padding: EdgeInsets.symmetric(vertical: verticalPadding),
+          child: AbsorbPointer(
+            absorbing: !isCentered,
+            child: child,
+          ),
+        ),
+
+        if (obscure > 0 && distance > 0)
+          Container(
+            width: width,
+            height: height,
+            padding: EdgeInsets.symmetric(
+              vertical: verticalPadding,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: BackdropFilter(
+                filter: getFilter(index),
+                child: Container(),
+              ),
+            ),
+          ),
+      ],
+    );
+
+    final realIndex = isInfinite && itemCount > 0
+        ? ((index % itemCount) + itemCount) % itemCount
+        : index;
+
+    if (centerOverlayBuilder != null && overlayOpacity > 0.0) {
+      final overlayWidget = centerOverlayBuilder!(context, realIndex);
+      if (overlayWidget is Positioned) {
+        cardWidget = Stack(
+          clipBehavior: Clip.none,
+          children: [
+            cardWidget,
+            Positioned(
+              left: overlayWidget.left,
+              top: overlayWidget.top,
+              right: overlayWidget.right,
+              bottom: overlayWidget.bottom,
+              width: overlayWidget.width,
+              height: overlayWidget.height,
+              child: IgnorePointer(
+                ignoring: !isCentered,
+                child: Opacity(
+                  opacity: overlayOpacity,
+                  child: overlayWidget.child,
+                ),
+              ),
+            ),
+          ],
+        );
+      } else if (overlayWidget is PositionedDirectional) {
+        cardWidget = Stack(
+          clipBehavior: Clip.none,
+          children: [
+            cardWidget,
+            PositionedDirectional(
+              start: overlayWidget.start,
+              top: overlayWidget.top,
+              end: overlayWidget.end,
+              bottom: overlayWidget.bottom,
+              width: overlayWidget.width,
+              height: overlayWidget.height,
+              child: IgnorePointer(
+                ignoring: !isCentered,
+                child: Opacity(
+                  opacity: overlayOpacity,
+                  child: overlayWidget.child,
+                ),
+              ),
+            ),
+          ],
+        );
+      } else {
+        cardWidget = Stack(
+          clipBehavior: Clip.none,
+          children: [
+            cardWidget,
+            Positioned.fill(
+              child: IgnorePointer(
+                ignoring: !isCentered,
+                child: Opacity(
+                  opacity: overlayOpacity,
+                  child: overlayWidget,
+                ),
+              ),
+            ),
+          ],
+        );
+      }
+    }
+
     return Positioned(
       left: position - width / 2,
       child: GestureDetector(
@@ -260,35 +364,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
               child: Transform(
                 alignment: Alignment.center,
                 transform: getTransform(index),
-                child: Stack(
-                  children: [
-                    Container(
-                      width: width,
-                      height: height,
-                      padding: EdgeInsets.symmetric(vertical: verticalPadding),
-                      child: AbsorbPointer(
-                        absorbing: !isCentered,
-                        child: child,
-                      ),
-                    ),
-
-                    if (obscure > 0 && distance > 0)
-                      Container(
-                        width: width,
-                        height: height,
-                        padding: EdgeInsets.symmetric(
-                          vertical: verticalPadding,
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: BackdropFilter(
-                            filter: getFilter(index),
-                            child: Container(),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                child: cardWidget,
               ),
             ),
           ),

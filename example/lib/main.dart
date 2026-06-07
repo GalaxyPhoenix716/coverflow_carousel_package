@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:coverflow_carousel/coverflow_carousel.dart';
 
@@ -126,6 +124,37 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                         _activePage = index;
                       });
                     },
+                    centerOverlayBuilder: (context, index) {
+                      return Positioned(
+                        right: 130 - 28 - 8,
+                        bottom: -30,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Material(
+                            color: Colors.pinkAccent,
+                            shape: const CircleBorder(),
+                            elevation: 8,
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.play_arrow,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Playing: ${_demoCards[index]['title']}',
+                                    ),
+                                    duration: const Duration(seconds: 1),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                     itemBuilder: (context, index) {
                       final card = _demoCards[index];
                       return Container(
@@ -138,9 +167,8 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: (card['colors'] as List<Color>)
-                                  .first
-                                  .withOpacity(0.4),
+                              color: (card['colors'] as List<Color>).first
+                                  .withValues(alpha: 0.4),
                               blurRadius: 15,
                               offset: const Offset(0, 8),
                             ),
@@ -159,39 +187,50 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                                   height: 150,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.white.withOpacity(0.15),
+                                    color: Colors.white.withValues(alpha: 0.15),
                                   ),
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Icon(
-                                      card['icon'] as IconData,
-                                      size: 48,
-                                      color: Colors.white,
+                                padding: const EdgeInsets.all(16.0),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.bottomLeft,
+                                  child: SizedBox(
+                                    width:
+                                        228, // itemWidth 260 minus horizontal padding 32
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Icon(
+                                          card['icon'],
+                                          size: 44,
+                                          color: Colors.white,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          card['title'] as String,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          card['subtitle'],
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.8,
+                                            ),
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 24),
-                                    Text(
-                                      card['title'] as String,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      card['subtitle'] as String,
-                                      style: TextStyle(
-                                        color: Colors.white.withOpacity(0.8),
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ],
@@ -262,7 +301,9 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF161522),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withOpacity(0.05)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,7 +322,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                       title: const Text('Infinite Scroll'),
                       subtitle: const Text('Enable wrap-around page looping'),
                       value: _isInfinite,
-                      activeColor: Colors.deepPurpleAccent,
+                      activeThumbColor: Colors.deepPurpleAccent,
                       onChanged: (val) {
                         setState(() {
                           _isInfinite = val;
@@ -327,23 +368,30 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                     // Entry Animation Selection Dropdown
                     ListTile(
                       title: const Text('Entry Animation'),
-                      trailing: DropdownButton<CoverflowEntryAnimation>(
-                        value: _entryAnimation,
-                        underline: const SizedBox(),
-                        onChanged: (CoverflowEntryAnimation? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              _entryAnimation = newValue;
-                            });
-                            _reloadCarousel();
-                          }
-                        },
-                        items: CoverflowEntryAnimation.values.map((anim) {
-                          return DropdownMenuItem<CoverflowEntryAnimation>(
-                            value: anim,
-                            child: Text(anim.name),
-                          );
-                        }).toList(),
+                      trailing: SizedBox(
+                        width: 140,
+                        child: DropdownButton<CoverflowEntryAnimation>(
+                          isExpanded: true,
+                          value: _entryAnimation,
+                          underline: const SizedBox(),
+                          onChanged: (CoverflowEntryAnimation? newValue) {
+                            if (newValue != null) {
+                              setState(() {
+                                _entryAnimation = newValue;
+                              });
+                              _reloadCarousel();
+                            }
+                          },
+                          items: CoverflowEntryAnimation.values.map((anim) {
+                            return DropdownMenuItem<CoverflowEntryAnimation>(
+                              value: anim,
+                              child: Text(
+                                anim.name,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
 
