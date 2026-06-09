@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'dart:ui';
+import 'package:flutter/gestures.dart';
 import 'coverflow_carousel_controller.dart';
 import 'coverflow_carousel_renderer.dart';
 
@@ -137,6 +137,16 @@ class CoverflowCarousel extends StatefulWidget {
   /// used within this builder to place the overlay anywhere on the card.
   final Widget Function(BuildContext context, int index)? centerOverlayBuilder;
 
+  /// Whether to enable 3D hover/tilt effects on cards when hovered by a mouse.
+  ///
+  /// Defaults to `true`.
+  final bool enableHoverTilt;
+
+  /// The maximum tilt angle (in radians) applied during the 3D hover effect.
+  ///
+  /// Defaults to `0.15` (approx 8.5 degrees).
+  final double maxHoverTiltAngle;
+
   /// Creates a Coverflow Carousel with a builder pattern.
   const CoverflowCarousel.builder({
     super.key,
@@ -161,6 +171,8 @@ class CoverflowCarousel extends StatefulWidget {
     this.entryAnimationDuration = const Duration(milliseconds: 1000),
     this.entryAnimationCurve = Curves.easeOutCubic,
     this.centerOverlayBuilder,
+    this.enableHoverTilt = true,
+    this.maxHoverTiltAngle = 0.15,
   });
 
   @override
@@ -175,6 +187,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
   late int _initialVirtualPage;
   AnimationController? _entryController;
   Animation<double>? _entryAnimation;
+  Duration? _lastScrollEventTimeStamp;
 
   @override
   void initState() {
@@ -217,6 +230,39 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
     if (realIndex != _lastReportedPage) {
       _lastReportedPage = realIndex;
       widget.onPageChanged?.call(realIndex);
+    }
+  }
+
+  void _handlePointerSignal(PointerSignalEvent event) {
+    if (event is PointerScrollEvent) {
+      final double delta = event.scrollDelta.dy != 0 ? event.scrollDelta.dy : event.scrollDelta.dx;
+      if (delta.abs() < 1) return;
+
+      if (!_controller.hasClients) return;
+
+      final now = event.timeStamp;
+      final throttleDuration = widget.animationDuration - const Duration(milliseconds: 50);
+      if (_lastScrollEventTimeStamp != null && (now - _lastScrollEventTimeStamp!) < throttleDuration) {
+        return;
+      }
+
+      if (delta > 0) {
+        if (widget.isInfinite || _controller.page! < widget.itemCount - 1) {
+          _controller.nextPage(
+            duration: widget.animationDuration,
+            curve: widget.animationCurve,
+          );
+          _lastScrollEventTimeStamp = now;
+        }
+      } else if (delta < 0) {
+        if (widget.isInfinite || _controller.page! > 0) {
+          _controller.previousPage(
+            duration: widget.animationDuration,
+            curve: widget.animationCurve,
+          );
+          _lastScrollEventTimeStamp = now;
+        }
+      }
     }
   }
 
@@ -322,83 +368,90 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: widget.itemHeight + 80,
-      child: Stack(
-        children: [
-          PageView.builder(
-            controller: _controller,
-            itemCount: widget.isInfinite ? null : widget.itemCount,
-            scrollBehavior: const _CoverflowScrollBehavior(),
-            itemBuilder: (_, _) {
-              return const SizedBox.shrink();
-            },
-          ),
+    return Listener(
+      onPointerSignal: _handlePointerSignal,
+      child: SizedBox(
+        height: widget.itemHeight + 80,
+        child: Stack(
+          children: [
+            PageView.builder(
+              controller: _controller,
+              itemCount: widget.isInfinite ? null : widget.itemCount,
+              scrollBehavior: const _CoverflowScrollBehavior(),
+              itemBuilder: (_, _) {
+                return const SizedBox.shrink();
+              },
+            ),
 
-          if (widget.entryAnimation == CoverflowEntryAnimation.none)
-            _CoverflowGesturePassThrough(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return CoverflowCarouselRenderer(
-                    controller: _controller,
-                    centerIndex: currentPage,
-                    maxWidth: constraints.maxWidth,
-                    itemWidth: widget.itemWidth,
-                    itemHeight: widget.itemHeight,
-                    itemCount: widget.itemCount,
-                    visibleItems: widget.visibleItems,
-                    itemBuilder: widget.itemBuilder,
-                    obscure: widget.obscure,
-                    skewAngle: widget.skewAngle,
-                    nearCardSpacing: widget.nearCardSpacing,
-                    farCardSpacing: widget.farCardSpacing,
-                    perspective: widget.perspective,
-                    animationDuration: widget.animationDuration,
-                    animationCurve: widget.animationCurve,
-                    isInfinite: widget.isInfinite,
-                    entryAnimation: CoverflowEntryAnimation.none,
-                    entryProgress: 1.0,
-                    initialPage: _initialVirtualPage,
-                    centerOverlayBuilder: widget.centerOverlayBuilder,
+            if (widget.entryAnimation == CoverflowEntryAnimation.none)
+              _CoverflowGesturePassThrough(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return CoverflowCarouselRenderer(
+                      controller: _controller,
+                      centerIndex: currentPage,
+                      maxWidth: constraints.maxWidth,
+                      itemWidth: widget.itemWidth,
+                      itemHeight: widget.itemHeight,
+                      itemCount: widget.itemCount,
+                      visibleItems: widget.visibleItems,
+                      itemBuilder: widget.itemBuilder,
+                      obscure: widget.obscure,
+                      skewAngle: widget.skewAngle,
+                      nearCardSpacing: widget.nearCardSpacing,
+                      farCardSpacing: widget.farCardSpacing,
+                      perspective: widget.perspective,
+                      animationDuration: widget.animationDuration,
+                      animationCurve: widget.animationCurve,
+                      isInfinite: widget.isInfinite,
+                      entryAnimation: CoverflowEntryAnimation.none,
+                      entryProgress: 1.0,
+                      initialPage: _initialVirtualPage,
+                      centerOverlayBuilder: widget.centerOverlayBuilder,
+                      enableHoverTilt: widget.enableHoverTilt,
+                      maxHoverTiltAngle: widget.maxHoverTiltAngle,
+                    );
+                  },
+                ),
+              )
+            else
+              AnimatedBuilder(
+                animation: _entryAnimation!,
+                builder: (context, child) {
+                  return _CoverflowGesturePassThrough(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return CoverflowCarouselRenderer(
+                          controller: _controller,
+                          centerIndex: currentPage,
+                          maxWidth: constraints.maxWidth,
+                          itemWidth: widget.itemWidth,
+                          itemHeight: widget.itemHeight,
+                          itemCount: widget.itemCount,
+                          visibleItems: widget.visibleItems,
+                          itemBuilder: widget.itemBuilder,
+                          obscure: widget.obscure,
+                          skewAngle: widget.skewAngle,
+                          nearCardSpacing: widget.nearCardSpacing,
+                          farCardSpacing: widget.farCardSpacing,
+                          perspective: widget.perspective,
+                          animationDuration: widget.animationDuration,
+                          animationCurve: widget.animationCurve,
+                          isInfinite: widget.isInfinite,
+                          entryAnimation: widget.entryAnimation,
+                          entryProgress: _entryAnimation!.value,
+                          initialPage: _initialVirtualPage,
+                          centerOverlayBuilder: widget.centerOverlayBuilder,
+                          enableHoverTilt: widget.enableHoverTilt,
+                          maxHoverTiltAngle: widget.maxHoverTiltAngle,
+                        );
+                      },
+                    ),
                   );
                 },
               ),
-            )
-          else
-            AnimatedBuilder(
-              animation: _entryAnimation!,
-              builder: (context, child) {
-                return _CoverflowGesturePassThrough(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return CoverflowCarouselRenderer(
-                        controller: _controller,
-                        centerIndex: currentPage,
-                        maxWidth: constraints.maxWidth,
-                        itemWidth: widget.itemWidth,
-                        itemHeight: widget.itemHeight,
-                        itemCount: widget.itemCount,
-                        visibleItems: widget.visibleItems,
-                        itemBuilder: widget.itemBuilder,
-                        obscure: widget.obscure,
-                        skewAngle: widget.skewAngle,
-                        nearCardSpacing: widget.nearCardSpacing,
-                        farCardSpacing: widget.farCardSpacing,
-                        perspective: widget.perspective,
-                        animationDuration: widget.animationDuration,
-                        animationCurve: widget.animationCurve,
-                        isInfinite: widget.isInfinite,
-                        entryAnimation: widget.entryAnimation,
-                        entryProgress: _entryAnimation!.value,
-                        initialPage: _initialVirtualPage,
-                        centerOverlayBuilder: widget.centerOverlayBuilder,
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

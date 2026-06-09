@@ -43,6 +43,8 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
   double _viewportFraction = 0.28;
   CoverflowEntryAnimation _entryAnimation = CoverflowEntryAnimation.stack;
   int _activePage = 0;
+  bool _enableHoverTilt = true;
+  double _maxHoverTiltAngle = 0.15;
 
   // Re-keying widget to easily trigger entry animation reload
   Key _carouselKey = UniqueKey();
@@ -119,6 +121,8 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                     entryAnimation: _entryAnimation,
                     entryAnimationDuration: const Duration(milliseconds: 1000),
                     entryAnimationCurve: Curves.easeOutBack,
+                    enableHoverTilt: _enableHoverTilt,
+                    maxHoverTiltAngle: _maxHoverTiltAngle,
                     onPageChanged: (index) {
                       setState(() {
                         _activePage = index;
@@ -295,17 +299,18 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
               const SizedBox(height: 30),
 
               // 3. Configurations Card Panel
-              Container(
+              Card(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF161522),
+                color: const Color(0xFF161522),
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
+                  side: BorderSide(
                     color: Colors.white.withValues(alpha: 0.05),
                   ),
                 ),
-                child: Column(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
@@ -395,6 +400,37 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                       ),
                     ),
 
+                    // Hover Tilt Toggle
+                    SwitchListTile(
+                      title: const Text('3D Hover Tilt'),
+                      subtitle: const Text('Tilt cards in 3D when hovered by mouse'),
+                      value: _enableHoverTilt,
+                      activeThumbColor: Colors.deepPurpleAccent,
+                      onChanged: (val) {
+                        setState(() {
+                          _enableHoverTilt = val;
+                        });
+                      },
+                    ),
+
+                    // Hover Tilt Intensity Slider
+                    if (_enableHoverTilt)
+                      ListTile(
+                        title: const Text('Max Tilt Angle (Hover)'),
+                        subtitle: Slider(
+                          value: _maxHoverTiltAngle,
+                          min: 0.05,
+                          max: 0.35,
+                          activeColor: Colors.deepPurpleAccent,
+                          label: '${(_maxHoverTiltAngle * 180 / 3.14159).toStringAsFixed(0)}°',
+                          onChanged: (val) {
+                            setState(() {
+                              _maxHoverTiltAngle = val;
+                            });
+                          },
+                        ),
+                      ),
+
                     const SizedBox(height: 12),
                     Center(
                       child: TextButton.icon(
@@ -409,6 +445,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                   ],
                 ),
               ),
+            ),
             ],
           ),
         ),

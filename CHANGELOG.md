@@ -54,3 +54,16 @@
 2. **Smooth Fade Transition**: The center overlay automatically fades in and out smoothly using a scroll-linked opacity calculation based on the card's distance from the center.
 3. **Flexible Positioning**: Developers can use standard Flutter alignment and layout widgets (`Align`, `Positioned`, `Center`) inside the overlay builder to place the widget anywhere on the card.
 4. **Interactive Overlays**: Overlay widgets on the active centered card are fully interactive and support pointer events (like button taps/onPressed), while off-center cards redirect taps to focus the card.
+
+5. **3D Hover/Tilt Effect**: Added support for interactive 3D perspective tilting of the active centered card as the mouse pointer hovers over it. Includes configuration properties `enableHoverTilt` and `maxHoverTiltAngle`.
+
+6. **Mouse Scroll Wheel Navigation**: Added support for mouse scroll wheel and trackpad scroll navigation to scroll to the next and previous cards.
+7. **Throttled Scroll Events**: Throttled consecutive scroll signals relative to the animation duration to prevent rapid card skipping and ensure smooth transitions.
+
+8. **Performance Optimizations**:
+   - Confined hover calculations and rebuilds locally to the centered card, preventing parent repaints.
+   - Wrapped tilted card children in a `RepaintBoundary` to leverage GPU matrix transformations and prevent expensive rasterization repaints.
+   - Fixed the resetting tilt animation to utilize linear interpolation from cached start offsets, preventing compounding timer decay.
+
+9. **Robust Testing**: Expanded package and example tests to cover mouse wheel navigation, scroll throttling, and 3D hover gestures.
+

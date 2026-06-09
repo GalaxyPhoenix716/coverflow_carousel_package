@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/gestures.dart';
 import 'package:coverflow_carousel/coverflow_carousel.dart';
 
 void main() {
@@ -438,6 +439,94 @@ void main() {
     final size = tester.getSize(containerFinder);
     expect(size.width, 50.0);
     expect(size.height, 50.0);
+  });
+
+  testWidgets('CoverflowCarousel handles mouse scroll wheel correctly',
+      (WidgetTester tester) async {
+    int pageChangedIndex = -1;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 5,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            onPageChanged: (index) {
+              pageChangedIndex = index;
+            },
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    // Initial index is 0
+    expect(find.text('Item 0'), findsOneWidget);
+
+    final carouselCenter = tester.getCenter(find.byType(CoverflowCarousel));
+    final pointer = TestPointer(1, PointerDeviceKind.mouse);
+    pointer.hover(carouselCenter);
+
+    // Send PointerScrollEvent for scrolling forward (dy > 0)
+    await tester.sendEventToBinding(
+      pointer.scroll(const Offset(0, 100)),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify it changed to page 1
+    expect(pageChangedIndex, 1);
+
+    // Wait for cooldown throttle (350ms - 50ms = 300ms)
+    await tester.pump(const Duration(milliseconds: 310));
+
+    // Send PointerScrollEvent for scrolling backward (dy < 0)
+    await tester.sendEventToBinding(
+      pointer.scroll(const Offset(0, -100), timeStamp: const Duration(milliseconds: 500)),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify it changed back to 0
+    expect(pageChangedIndex, 0);
+  });
+
+  testWidgets('CoverflowCarousel supports 3D Hover Tilt',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 3,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            enableHoverTilt: true,
+            maxHoverTiltAngle: 0.2,
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    final itemCenter = tester.getCenter(find.text('Item 0'));
+    final pointer = TestPointer(1, PointerDeviceKind.mouse);
+
+    // Enter and hover offset on active item
+    await tester.sendEventToBinding(
+      pointer.hover(itemCenter + const Offset(50, -50)),
+    );
+    await tester.pump();
+
+    // Exit hover
+    await tester.sendEventToBinding(
+      pointer.hover(const Offset(0, 0)),
+    );
+    await tester.pumpAndSettle();
   });
 }
 

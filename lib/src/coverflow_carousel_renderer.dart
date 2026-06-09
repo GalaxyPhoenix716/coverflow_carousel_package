@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:flutter/gestures.dart';
 import 'card_model.dart';
 import 'coverflow_carousel.dart';
 
@@ -69,6 +70,12 @@ class CoverflowCarouselRenderer extends StatelessWidget {
   /// Optional builder that returns a widget to stack on top of the active centered card.
   final Widget Function(BuildContext context, int index)? centerOverlayBuilder;
 
+  /// Whether to enable 3D hover/tilt effects on cards.
+  final bool enableHoverTilt;
+
+  /// The maximum tilt angle (in radians) applied during the 3D hover effect.
+  final double maxHoverTiltAngle;
+
   /// Creates a [CoverflowCarouselRenderer] to lay out and paint the carousel cards.
   const CoverflowCarouselRenderer({
     super.key,
@@ -91,6 +98,8 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     required this.entryAnimation,
     required this.entryProgress,
     required this.initialPage,
+    required this.enableHoverTilt,
+    required this.maxHoverTiltAngle,
     this.centerOverlayBuilder,
   });
 
@@ -252,7 +261,12 @@ class CoverflowCarouselRenderer extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: verticalPadding),
           child: AbsorbPointer(
             absorbing: !isCentered,
-            child: child,
+            child: _CoverflowHoverTilt(
+              enabled: enableHoverTilt && isCentered,
+              maxTiltAngle: maxHoverTiltAngle,
+              perspective: perspective,
+              child: child,
+            ),
           ),
         ),
 
@@ -420,6 +434,116 @@ class CoverflowCarouselRenderer extends StatelessWidget {
       clipBehavior: Clip.none,
       alignment: Alignment.center,
       children: buildCards(context),
+    );
+  }
+}
+
+/// A highly optimized helper widget that applies a 3D hover tilt effect to its child.
+///
+/// Tracks mouse entry and pointer movements to calculate normalized offsets and apply
+/// perspective skew rotation around the horizontal and vertical axes.
+class _CoverflowHoverTilt extends StatefulWidget {
+  final Widget child;
+  final bool enabled;
+  final double maxTiltAngle;
+  final double perspective;
+
+  const _CoverflowHoverTilt({
+    required this.child,
+    required this.enabled,
+    required this.maxTiltAngle,
+    required this.perspective,
+  });
+
+  @override
+  State<_CoverflowHoverTilt> createState() => _CoverflowHoverTiltState();
+}
+
+class _CoverflowHoverTiltState extends State<_CoverflowHoverTilt>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  double _tiltX = 0.0;
+  double _tiltY = 0.0;
+  double _baseTiltX = 0.0;
+  double _baseTiltY = 0.0;
+  bool _hovering = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _controller.addListener(() {
+      if (!_hovering) {
+        setState(() {
+          _tiltX = lerpDouble(_baseTiltX, 0.0, _controller.value) ?? 0.0;
+          _tiltY = lerpDouble(_baseTiltY, 0.0, _controller.value) ?? 0.0;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onEnter(PointerEnterEvent event) {
+    if (!widget.enabled) return;
+    _hovering = true;
+    _controller.stop();
+  }
+
+  void _onHover(PointerHoverEvent event) {
+    if (!widget.enabled) return;
+    final size = context.size;
+    if (size == null) return;
+
+    final double x = event.localPosition.dx;
+    final double y = event.localPosition.dy;
+
+    final double nx = (x / size.width) - 0.5;
+    final double ny = (y / size.height) - 0.5;
+
+    setState(() {
+      _tiltX = -ny * widget.maxTiltAngle;
+      _tiltY = nx * widget.maxTiltAngle;
+    });
+  }
+
+  void _onExit(PointerExitEvent event) {
+    if (!widget.enabled) return;
+    _hovering = false;
+    _baseTiltX = _tiltX;
+    _baseTiltY = _tiltY;
+    _controller.forward(from: 0.0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.enabled) {
+      return widget.child;
+    }
+
+    final transform = Matrix4.identity()
+      ..setEntry(3, 2, widget.perspective)
+      ..rotateX(_tiltX)
+      ..rotateY(_tiltY);
+
+    return MouseRegion(
+      onEnter: _onEnter,
+      onHover: _onHover,
+      onExit: _onExit,
+      child: Transform(
+        alignment: Alignment.center,
+        transform: transform,
+        child: RepaintBoundary(
+          child: widget.child,
+        ),
+      ),
     );
   }
 }
