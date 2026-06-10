@@ -13,8 +13,11 @@ Perfect for music apps, movie browsers, ecommerce showcases, galleries, portfoli
 - Smooth 3D coverflow-style design
 - Responsive across different screen sizes
 - Swipe-based navigation
-- Infinite scroll support (seamless looping and circular swiping)
-- Dynamic entry animations (fades, zoom scales, horizontal fanning, sliding, and sequential stacking)
+- **Infinite scroll support** (seamless looping and circular swiping)
+- **Dynamic entry animations** (fades, zoom scales, horizontal fanning, sliding, and sequential stacking)
+- **Center card overlay builder** (dynamic overlays with automatic distance-linked fade transitions)
+- **3D hover/tilt effects** (interactive pointer-tracking card tilt in 3D)
+- **Mouse scroll wheel and trackpad navigation** (throttled desktop/web scroll interaction)
 - Custom viewport fraction (dynamic page scroll width adjustments)
 - Click-to-focus on off-center cards
 - Multi-gesture compatibility (internal card interactions work seamlessly on active cards)
@@ -43,7 +46,7 @@ Add the package to your `pubspec.yaml`.
 
 ```yaml
 dependencies:
-  coverflow_carousel: ^1.1.1
+  coverflow_carousel: ^1.3.0
 ```
 
 OR
@@ -138,6 +141,43 @@ CoverflowCarousel.builder(
 
 ---
 
+## Center Card Overlay
+
+Stack custom widgets (like play buttons, badges, overlays) directly on the active centered card. Overlays automatically fade out smoothly as the card moves away from the center.
+
+```dart
+CoverflowCarousel.builder(
+  itemCount: items.length,
+  itemWidth: 250,
+  itemHeight: 320,
+  centerOverlayBuilder: (context, index) {
+    return Positioned(
+      bottom: 20,
+      right: 20,
+      child: FloatingActionButton(
+        onPressed: () => print("Playing $index"),
+        child: Icon(Icons.play_arrow),
+      ),
+    );
+  },
+  itemBuilder: (context, index) => MyCard(index: index),
+)
+```
+
+## 3D Hover/Tilt Effect
+
+Bring your carousel to life on web and desktop. The focused card tilts in 3D space tracking the user's mouse movements. When the mouse leaves, the card smoothly decelerates back to center.
+
+Configure tilt support with:
+- `enableHoverTilt`: Whether to enable 3D hover/tilt effects on the center card (defaults to `true`).
+- `maxHoverTiltAngle`: The maximum rotation angle in radians (defaults to `0.15`, approximately 8.5 degrees).
+
+## Mouse Scroll Wheel Navigation
+
+Support scroll wheel and trackpad swipe movements to change pages. Navigation requests are automatically throttled relative to the transition animation duration to guarantee smooth transitions.
+
+---
+
 ## Parameters
 
 | Parameter              | Type                         | Description                                                         |
@@ -161,6 +201,9 @@ CoverflowCarousel.builder(
 | entryAnimation         | CoverflowEntryAnimation      | Entrance animation type (default: `.none`)                          |
 | entryAnimationDuration | Duration                     | Entrance animation duration (default: `600ms`)                      |
 | entryAnimationCurve    | Curve                        | Entrance animation curve (default: `Curves.easeOutCubic`)           |
+| centerOverlayBuilder   | Widget Function(BuildContext, int)? | Builder for overlays stacked on the active centered card (default: `null`) |
+| enableHoverTilt        | bool                         | Enable 3D hover/tilt effects on the active centered card (default: `true`) |
+| maxHoverTiltAngle      | double                       | Maximum tilt angle in radians applied during mouse hover (default: `0.15`) |
 
 ---
 
@@ -229,8 +272,6 @@ For questions, issues, or suggestions, please use the project's GitHub Issues pa
 
 Planned improvements include:
 
-- Additional custom entry curves and animation presets
-- Direct mouse scroll wheel scroll-interaction support
 - Customizable layout coordinates for vertical coverflow carousels
 
 Thank you for using Coverflow Carousel!
