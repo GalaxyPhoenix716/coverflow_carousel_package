@@ -67,3 +67,8 @@
 
 9. **Robust Testing**: Expanded package and example tests to cover mouse wheel navigation, scroll throttling, and 3D hover gestures.
 
+# 1.2.1
+
+1. **Smooth Scroll**: The scroll is now smoother
+
+2. **New Demos**: Added new demos

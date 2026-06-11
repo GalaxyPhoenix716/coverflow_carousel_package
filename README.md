@@ -47,7 +47,7 @@ Add the package to your `pubspec.yaml`.
 
 ```yaml
 dependencies:
-  coverflow_carousel: ^1.2.0
+  coverflow_carousel: ^1.2.1
 ```
 
 OR
