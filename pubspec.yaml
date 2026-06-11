@@ -5,6 +5,13 @@ homepage: https://github.com/GalaxyPhoenix716/coverflow_carousel_package
 repository: https://github.com/GalaxyPhoenix716/coverflow_carousel_package
 license: BSD-3-Clause
 
+topics: 
+  - coverflow
+  - carousel
+  - 3d-carousel
+  - image-slider
+  - ui-widget
+
 environment:
   sdk: ^3.11.3
   flutter: ">=1.17.0"
