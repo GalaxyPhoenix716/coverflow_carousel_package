@@ -14,7 +14,7 @@ topics:
 
 environment:
   sdk: ^3.11.3
-  flutter: ">=1.17.0"
+  flutter: ">=3.11.3"
 
 dependencies:
   flutter:
@@ -24,5 +24,3 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-
-flutter:
