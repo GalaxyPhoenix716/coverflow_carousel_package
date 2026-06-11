@@ -37,6 +37,7 @@ Perfect for music apps, movie browsers, ecommerce showcases, galleries, portfoli
 ## Preview
 
 ![Coverflow Carousel Demo](assets/coverflow_carousel_demo.gif)
+![Coverflow Carousel Demo](assets/coverflow_carousel_demo_2.gif)
 
 ---
 
