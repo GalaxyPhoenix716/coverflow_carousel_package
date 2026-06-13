@@ -348,18 +348,29 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
 
   void _pageListener() {
     final page = _controller.page ?? 0;
-    setState(() {
-      currentPage = page;
-    });
 
-    final rounded = page.round();
-    final realIndex = widget.isInfinite && widget.itemCount > 0
-        ? ((rounded % widget.itemCount) + widget.itemCount) % widget.itemCount
-        : rounded;
+    void update() {
+      if (!mounted) return;
+      setState(() {
+        currentPage = page;
+      });
 
-    if (realIndex != _lastReportedPage) {
-      _lastReportedPage = realIndex;
-      widget.onPageChanged?.call(realIndex);
+      final rounded = page.round();
+      final realIndex = widget.isInfinite && widget.itemCount > 0
+          ? ((rounded % widget.itemCount) + widget.itemCount) % widget.itemCount
+          : rounded;
+
+      if (realIndex != _lastReportedPage) {
+        _lastReportedPage = realIndex;
+        widget.onPageChanged?.call(realIndex);
+      }
+    }
+
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => update());
+    } else {
+      update();
     }
   }
 
