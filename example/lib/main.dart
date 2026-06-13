@@ -48,6 +48,8 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
   bool _enableScrollWheel = true;
   bool _useCustomHeight = false;
   double _carouselHeight = 360.0;
+  bool _autoplay = false;
+  double _autoplayIntervalSeconds = 3.0;
 
   // Re-keying widget to easily trigger entry animation reload
   Key _carouselKey = UniqueKey();
@@ -128,6 +130,8 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                     enableHoverTilt: _enableHoverTilt,
                     maxHoverTiltAngle: _maxHoverTiltAngle,
                     enableScrollWheel: _enableScrollWheel,
+                    autoplay: _autoplay,
+                    autoplayInterval: Duration(milliseconds: (_autoplayIntervalSeconds * 1000).toInt()),
                     onPageChanged: (index) {
                       setState(() {
                         _activePage = index;
@@ -401,6 +405,38 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                           onChanged: (val) {
                             setState(() {
                               _carouselHeight = val;
+                            });
+                          },
+                        ),
+                      ),
+
+                    // Autoplay Toggle
+                    SwitchListTile(
+                      title: const Text('Autoplay'),
+                      subtitle: const Text('Auto-advance pages at a set interval'),
+                      value: _autoplay,
+                      activeThumbColor: Colors.deepPurpleAccent,
+                      onChanged: (val) {
+                        setState(() {
+                          _autoplay = val;
+                        });
+                      },
+                    ),
+
+                    // Autoplay Interval Slider
+                    if (_autoplay)
+                      ListTile(
+                        title: const Text('Autoplay Interval'),
+                        subtitle: Slider(
+                          value: _autoplayIntervalSeconds,
+                          min: 1.0,
+                          max: 8.0,
+                          divisions: 14,
+                          activeColor: Colors.deepPurpleAccent,
+                          label: '${_autoplayIntervalSeconds.toStringAsFixed(1)}s',
+                          onChanged: (val) {
+                            setState(() {
+                              _autoplayIntervalSeconds = val;
                             });
                           },
                         ),

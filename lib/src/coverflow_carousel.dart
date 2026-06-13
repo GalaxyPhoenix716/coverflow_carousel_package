@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/gestures.dart';
+import 'dart:async';
 import 'coverflow_carousel_controller.dart';
 import 'coverflow_carousel_renderer.dart';
 
@@ -158,6 +159,21 @@ class CoverflowCarousel extends StatefulWidget {
   /// sufficient space for 3D card perspective tilt, shadow elevations, and active card overlays.
   final double? height;
 
+  /// Whether to enable auto-advancement of cards.
+  ///
+  /// Defaults to `false`.
+  final bool autoplay;
+
+  /// The duration of the interval between autoplay loops.
+  ///
+  /// Defaults to `3` seconds.
+  final Duration autoplayInterval;
+
+  /// Whether to pause card auto-advancements when the mouse pointer is hovering over the carousel.
+  ///
+  /// Defaults to `true`.
+  final bool autoplayPauseOnHover;
+
   /// Creates a Coverflow Carousel with a builder pattern.
   const CoverflowCarousel.builder({
     super.key,
@@ -186,6 +202,9 @@ class CoverflowCarousel extends StatefulWidget {
     this.maxHoverTiltAngle = 0.15,
     this.enableScrollWheel = true,
     this.height,
+    this.autoplay = false,
+    this.autoplayInterval = const Duration(seconds: 3),
+    this.autoplayPauseOnHover = true,
   }) : assert(height == null || height >= itemHeight, 'height must be greater than or equal to itemHeight to prevent layout clipping.');
 
   @override
@@ -201,6 +220,52 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
   AnimationController? _entryController;
   Animation<double>? _entryAnimation;
   Duration? _lastScrollEventTimeStamp;
+  Timer? _autoplayTimer;
+  bool _isHovering = false;
+  bool _isUserDragging = false;
+
+  void _resumeAutoplay() {
+    if (!widget.autoplay) return;
+    if (_isUserDragging) return;
+    if (_isHovering && widget.autoplayPauseOnHover) return;
+    if (widget.itemCount <= 1) return;
+
+    _autoplayTimer?.cancel();
+    _autoplayTimer = Timer.periodic(widget.autoplayInterval, (_) => _handleAutoplayTick());
+  }
+
+  void _pauseAutoplay() {
+    _autoplayTimer?.cancel();
+    _autoplayTimer = null;
+  }
+
+  void _handleAutoplayTick() {
+    if (!_controller.hasClients) return;
+    if (widget.itemCount <= 1) return;
+
+    final page = _controller.page ?? 0.0;
+    final targetPage = page.round() + 1;
+
+    if (widget.isInfinite) {
+      _controller.nextPage(
+        duration: widget.animationDuration,
+        curve: widget.animationCurve,
+      );
+    } else {
+      if (targetPage < widget.itemCount) {
+        _controller.nextPage(
+          duration: widget.animationDuration,
+          curve: widget.animationCurve,
+        );
+      } else {
+        _controller.animateToPage(
+          0,
+          duration: widget.animationDuration,
+          curve: widget.animationCurve,
+        );
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -227,6 +292,9 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
 
     _controller.addListener(_pageListener);
     _attachController();
+    if (widget.autoplay) {
+      _resumeAutoplay();
+    }
   }
 
   void _pageListener() {
@@ -324,6 +392,15 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
       _controller.addListener(_pageListener);
       _attachController();
     }
+
+    if (oldWidget.autoplay != widget.autoplay ||
+        oldWidget.autoplayInterval != widget.autoplayInterval) {
+      if (widget.autoplay) {
+        _resumeAutoplay();
+      } else {
+        _pauseAutoplay();
+      }
+    }
   }
 
   void _attachController() {
@@ -373,6 +450,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
 
   @override
   void dispose() {
+    _autoplayTimer?.cancel();
     widget.controller?.detach();
     _controller.dispose();
     _entryController?.dispose();
@@ -386,13 +464,25 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
       height: widget.height ?? widget.itemHeight + 80,
       child: Stack(
         children: [
-          PageView.builder(
-            controller: _controller,
-            itemCount: widget.isInfinite ? null : widget.itemCount,
-            scrollBehavior: const _CoverflowScrollBehavior(),
-            itemBuilder: (_, _) {
-              return const SizedBox.shrink();
+          NotificationListener<ScrollNotification>(
+            onNotification: (ScrollNotification notification) {
+              if (notification is ScrollStartNotification) {
+                _isUserDragging = true;
+                _pauseAutoplay();
+              } else if (notification is ScrollEndNotification) {
+                _isUserDragging = false;
+                _resumeAutoplay();
+              }
+              return false;
             },
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: widget.isInfinite ? null : widget.itemCount,
+              scrollBehavior: const _CoverflowScrollBehavior(),
+              itemBuilder: (_, _) {
+                return const SizedBox.shrink();
+              },
+            ),
           ),
 
           if (widget.entryAnimation == CoverflowEntryAnimation.none)
@@ -466,13 +556,30 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
       ),
     );
 
+    Widget result = carouselContent;
+
     if (widget.enableScrollWheel) {
-      return Listener(
+      result = Listener(
         onPointerSignal: _handlePointerSignal,
-        child: carouselContent,
+        child: result,
       );
     }
-    return carouselContent;
+
+    if (widget.autoplay && widget.autoplayPauseOnHover) {
+      result = MouseRegion(
+        onEnter: (_) {
+          _isHovering = true;
+          _pauseAutoplay();
+        },
+        onExit: (_) {
+          _isHovering = false;
+          _resumeAutoplay();
+        },
+        child: result,
+      );
+    }
+
+    return result;
   }
 }
 

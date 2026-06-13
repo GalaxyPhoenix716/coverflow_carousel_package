@@ -596,5 +596,142 @@ void main() {
     final double height = tester.getSize(containerFinder).height;
     expect(height, customHeight);
   });
+
+  testWidgets('CoverflowCarousel autoplay advances pages automatically',
+      (WidgetTester tester) async {
+    int pageChangedIndex = -1;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 3,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            autoplay: true,
+            autoplayInterval: const Duration(seconds: 1),
+            onPageChanged: (index) {
+              pageChangedIndex = index;
+            },
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    // Initial page is 0
+    expect(find.text('Item 0'), findsOneWidget);
+
+    // Pump for 1 second (interval) + some settle frames
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    // Verify it transitioned to page 1
+    expect(pageChangedIndex, 1);
+
+    // Pump for another 1 second
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    // Verify it transitioned to page 2
+    expect(pageChangedIndex, 2);
+  });
+
+  testWidgets('CoverflowCarousel autoplay loops back to 0 on non-infinite scroll',
+      (WidgetTester tester) async {
+    int pageChangedIndex = -1;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 3,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 2, // Start at last page
+            autoplay: true,
+            autoplayInterval: const Duration(seconds: 1),
+            onPageChanged: (index) {
+              pageChangedIndex = index;
+            },
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    // Verify we are at page 2
+    expect(find.text('Item 2'), findsOneWidget);
+
+    // Pump for 1 second to trigger autoplay tick
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    // Verify it looped back to index 0
+    expect(pageChangedIndex, 0);
+  });
+
+  testWidgets('CoverflowCarousel autoplay pauses on hover and resumes on exit',
+      (WidgetTester tester) async {
+    int pageChangedIndex = -1;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 3,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            autoplay: true,
+            autoplayInterval: const Duration(seconds: 1),
+            autoplayPauseOnHover: true,
+            onPageChanged: (index) {
+              pageChangedIndex = index;
+            },
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    // Initial page is 0
+    expect(find.text('Item 0'), findsOneWidget);
+
+    // Hover over the carousel container
+    final carouselCenter = tester.getCenter(find.byType(CoverflowCarousel));
+    final pointer = TestPointer(1, PointerDeviceKind.mouse);
+    await tester.sendEventToBinding(
+      pointer.hover(carouselCenter),
+    );
+    await tester.pump();
+
+    // Pump for 1.5 seconds (longer than autoplayInterval)
+    await tester.pump(const Duration(milliseconds: 1500));
+    await tester.pumpAndSettle();
+
+    // Verify it did NOT transition because of hover pause
+    expect(pageChangedIndex, -1);
+
+    // Move mouse out to exit hover
+    await tester.sendEventToBinding(
+      pointer.hover(const Offset(9999, 9999)),
+    );
+    await tester.pumpAndSettle();
+
+    // Pump for 1 second + settle frames
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    // Verify it now transitioned to page 1
+    expect(pageChangedIndex, 1);
+  });
 }
 
