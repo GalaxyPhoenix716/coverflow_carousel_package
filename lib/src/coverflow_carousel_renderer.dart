@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/scheduler.dart';
 import 'card_model.dart';
 import 'coverflow_carousel.dart';
 
@@ -276,36 +277,20 @@ class CoverflowCarouselRenderer extends StatelessWidget {
           )
         : child;
 
-    Widget cardWidget = Container(
-      width: width,
-      height: height,
-      padding: EdgeInsets.symmetric(vertical: verticalPadding),
-      child: AbsorbPointer(
-        absorbing: !isCentered,
-        child: _CoverflowHoverTilt(
-          enabled: enableHoverTilt && isCentered,
-          maxTiltAngle: maxHoverTiltAngle,
-          perspective: perspective,
-          enableShadow: enableShadow,
-          shadowColor: shadowColor,
-          elevation: elevation,
-          borderRadius: cardBorderRadius,
-          child: cardChild,
-        ),
-      ),
-    );
-
     final realIndex = isInfinite && itemCount > 0
         ? ((index % itemCount) + itemCount) % itemCount
         : index;
 
+    Widget mainContent = cardChild;
+
     if (centerOverlayBuilder != null && overlayOpacity > 0.0) {
       final overlayWidget = centerOverlayBuilder!(context, realIndex);
       if (overlayWidget is Positioned) {
-        cardWidget = Stack(
+        mainContent = Stack(
+          fit: StackFit.expand,
           clipBehavior: Clip.none,
           children: [
-            cardWidget,
+            mainContent,
             Positioned(
               left: overlayWidget.left,
               top: overlayWidget.top,
@@ -324,10 +309,11 @@ class CoverflowCarouselRenderer extends StatelessWidget {
           ],
         );
       } else if (overlayWidget is PositionedDirectional) {
-        cardWidget = Stack(
+        mainContent = Stack(
+          fit: StackFit.expand,
           clipBehavior: Clip.none,
           children: [
-            cardWidget,
+            mainContent,
             PositionedDirectional(
               start: overlayWidget.start,
               top: overlayWidget.top,
@@ -346,10 +332,11 @@ class CoverflowCarouselRenderer extends StatelessWidget {
           ],
         );
       } else {
-        cardWidget = Stack(
+        mainContent = Stack(
+          fit: StackFit.expand,
           clipBehavior: Clip.none,
           children: [
-            cardWidget,
+            mainContent,
             Positioned.fill(
               child: IgnorePointer(
                 ignoring: !isCentered,
@@ -363,6 +350,25 @@ class CoverflowCarouselRenderer extends StatelessWidget {
         );
       }
     }
+
+    final Widget cardWidget = Container(
+      width: width,
+      height: height,
+      padding: EdgeInsets.symmetric(vertical: verticalPadding),
+      child: AbsorbPointer(
+        absorbing: !isCentered,
+        child: _CoverflowHoverTilt(
+          enabled: enableHoverTilt && isCentered,
+          maxTiltAngle: maxHoverTiltAngle,
+          perspective: perspective,
+          enableShadow: enableShadow,
+          shadowColor: shadowColor,
+          elevation: elevation,
+          borderRadius: cardBorderRadius,
+          child: mainContent,
+        ),
+      ),
+    );
 
     return Positioned(
       left: position - width / 2,
@@ -476,40 +482,52 @@ class _CoverflowHoverTilt extends StatefulWidget {
 
 class _CoverflowHoverTiltState extends State<_CoverflowHoverTilt>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late Ticker _ticker;
   double _tiltX = 0.0;
   double _tiltY = 0.0;
-  double _baseTiltX = 0.0;
-  double _baseTiltY = 0.0;
-  bool _hovering = false;
+  double _targetTiltX = 0.0;
+  double _targetTiltY = 0.0;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-    _controller.addListener(() {
-      if (!_hovering) {
-        setState(() {
-          _tiltX = lerpDouble(_baseTiltX, 0.0, _controller.value) ?? 0.0;
-          _tiltY = lerpDouble(_baseTiltY, 0.0, _controller.value) ?? 0.0;
-        });
-      }
-    });
+    _ticker = createTicker((_) => _tick());
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _ticker.dispose();
     super.dispose();
+  }
+
+  void _tick() {
+    final double nextX = lerpDouble(_tiltX, _targetTiltX, 0.15) ?? _targetTiltX;
+    final double nextY = lerpDouble(_tiltY, _targetTiltY, 0.15) ?? _targetTiltY;
+
+    if ((nextX - _targetTiltX).abs() < 0.0001 && (nextY - _targetTiltY).abs() < 0.0001) {
+      setState(() {
+        _tiltX = _targetTiltX;
+        _tiltY = _targetTiltY;
+      });
+      _ticker.stop();
+      return;
+    }
+
+    setState(() {
+      _tiltX = nextX;
+      _tiltY = nextY;
+    });
+  }
+
+  void _ensureTickerRunning() {
+    if (!_ticker.isActive) {
+      _ticker.start();
+    }
   }
 
   void _onEnter(PointerEnterEvent event) {
     if (!widget.enabled) return;
-    _hovering = true;
-    _controller.stop();
+    _ensureTickerRunning();
   }
 
   void _onHover(PointerHoverEvent event) {
@@ -523,18 +541,17 @@ class _CoverflowHoverTiltState extends State<_CoverflowHoverTilt>
     final double nx = (x / size.width) - 0.5;
     final double ny = (y / size.height) - 0.5;
 
-    setState(() {
-      _tiltX = -ny * widget.maxTiltAngle;
-      _tiltY = nx * widget.maxTiltAngle;
-    });
+    _targetTiltX = -ny * widget.maxTiltAngle;
+    _targetTiltY = nx * widget.maxTiltAngle;
+
+    _ensureTickerRunning();
   }
 
   void _onExit(PointerExitEvent event) {
     if (!widget.enabled) return;
-    _hovering = false;
-    _baseTiltX = _tiltX;
-    _baseTiltY = _tiltY;
-    _controller.forward(from: 0.0);
+    _targetTiltX = 0.0;
+    _targetTiltY = 0.0;
+    _ensureTickerRunning();
   }
 
   List<BoxShadow> _buildDynamicShadows() {
