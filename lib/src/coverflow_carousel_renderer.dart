@@ -213,7 +213,10 @@ class CoverflowCarouselRenderer extends StatelessWidget {
       final double maxDistance = visibleItems.toDouble();
       final double intervals = maxDistance > 0 ? maxDistance + 1 : 1.0;
       final double intervalWidth = 1.0 / intervals;
-      final double distance = (initialPage - index).abs().toDouble().clamp(0.0, maxDistance);
+      final double distance = (initialPage - index).abs().toDouble().clamp(
+        0.0,
+        maxDistance,
+      );
       final double start = distance * intervalWidth;
       final double end = start + intervalWidth;
 
@@ -271,10 +274,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
 
     final double overlayOpacity = (1.0 - distance).clamp(0.0, 1.0);
     final Widget cardChild = obscure > 0 && distance > 0
-        ? ImageFiltered(
-            imageFilter: getFilter(index),
-            child: child,
-          )
+        ? ImageFiltered(imageFilter: getFilter(index), child: child)
         : child;
 
     final realIndex = isInfinite && itemCount > 0
@@ -340,10 +340,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
             Positioned.fill(
               child: IgnorePointer(
                 ignoring: !isCentered,
-                child: Opacity(
-                  opacity: overlayOpacity,
-                  child: overlayWidget,
-                ),
+                child: Opacity(opacity: overlayOpacity, child: overlayWidget),
               ),
             ),
           ],
@@ -504,7 +501,8 @@ class _CoverflowHoverTiltState extends State<_CoverflowHoverTilt>
     final double nextX = lerpDouble(_tiltX, _targetTiltX, 0.15) ?? _targetTiltX;
     final double nextY = lerpDouble(_tiltY, _targetTiltY, 0.15) ?? _targetTiltY;
 
-    if ((nextX - _targetTiltX).abs() < 0.0001 && (nextY - _targetTiltY).abs() < 0.0001) {
+    if ((nextX - _targetTiltX).abs() < 0.0001 &&
+        (nextY - _targetTiltY).abs() < 0.0001) {
       setState(() {
         _tiltX = _targetTiltX;
         _tiltY = _targetTiltY;
@@ -562,10 +560,7 @@ class _CoverflowHoverTiltState extends State<_CoverflowHoverTilt>
       BoxShadow(
         color: widget.shadowColor.withValues(alpha: 0.18),
         blurRadius: elev * 1.5,
-        offset: Offset(
-          -_tiltY * elev * 2.0,
-          elev + (_tiltX * elev * 2.0),
-        ),
+        offset: Offset(-_tiltY * elev * 2.0, elev + (_tiltX * elev * 2.0)),
         spreadRadius: -elev * 0.1,
       ),
       BoxShadow(
@@ -587,9 +582,7 @@ class _CoverflowHoverTiltState extends State<_CoverflowHoverTilt>
         borderRadius: widget.borderRadius,
         boxShadow: widget.enableShadow ? _buildDynamicShadows() : null,
       ),
-      child: RepaintBoundary(
-        child: widget.child,
-      ),
+      child: RepaintBoundary(child: widget.child),
     );
 
     if (!widget.enabled) {
@@ -613,4 +606,3 @@ class _CoverflowHoverTiltState extends State<_CoverflowHoverTilt>
     );
   }
 }
-

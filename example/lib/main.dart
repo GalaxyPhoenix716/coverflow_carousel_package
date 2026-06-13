@@ -38,6 +38,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
   final CoverflowCarouselController _controller = CoverflowCarouselController();
 
   // Carousel Configurations
+  CoverflowMode _mode = CoverflowMode.coverflow;
   bool _isInfinite = true;
   double _obscure = 0.4;
   double _viewportFraction = 0.28;
@@ -50,6 +51,9 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
   double _carouselHeight = 360.0;
   bool _autoplay = false;
   double _autoplayIntervalSeconds = 3.0;
+  bool _enableShadow = true;
+  double _shadowElevation = 8.0;
+  double _cardCornerRadiusValue = 24.0;
 
   // Re-keying widget to easily trigger entry animation reload
   Key _carouselKey = UniqueKey();
@@ -120,7 +124,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                     itemWidth: 260,
                     itemHeight: 280,
                     height: _useCustomHeight ? _carouselHeight : null,
-                    visibleItems: 3,
+                    mode: _mode,
                     isInfinite: _isInfinite,
                     obscure: _obscure,
                     viewportFraction: _viewportFraction,
@@ -131,7 +135,14 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                     maxHoverTiltAngle: _maxHoverTiltAngle,
                     enableScrollWheel: _enableScrollWheel,
                     autoplay: _autoplay,
-                    autoplayInterval: Duration(milliseconds: (_autoplayIntervalSeconds * 1000).toInt()),
+                    autoplayInterval: Duration(
+                      milliseconds: (_autoplayIntervalSeconds * 1000).toInt(),
+                    ),
+                    enableShadow: _enableShadow,
+                    elevation: _shadowElevation,
+                    cardBorderRadius: BorderRadius.circular(
+                      _cardCornerRadiusValue,
+                    ),
                     onPageChanged: (index) {
                       setState(() {
                         _activePage = index;
@@ -172,23 +183,19 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                       final card = _demoCards[index];
                       return Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(
+                            _cardCornerRadiusValue,
+                          ),
                           gradient: LinearGradient(
                             colors: card['colors'] as List<Color>,
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (card['colors'] as List<Color>).first
-                                  .withValues(alpha: 0.4),
-                              blurRadius: 15,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(
+                            _cardCornerRadiusValue,
+                          ),
                           child: Stack(
                             children: [
                               // Glassmorphic top glow overlay
@@ -313,224 +320,319 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                 color: const Color(0xFF161522),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.05),
-                  ),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Interactive Configurations',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Interactive Configurations',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const Divider(height: 24, color: Colors.grey),
+                      const Divider(height: 24, color: Colors.grey),
 
-                    // Infinite Scroll Toggle
-                    SwitchListTile(
-                      title: const Text('Infinite Scroll'),
-                      subtitle: const Text('Enable wrap-around page looping'),
-                      value: _isInfinite,
-                      activeThumbColor: Colors.deepPurpleAccent,
-                      onChanged: (val) {
-                        setState(() {
-                          _isInfinite = val;
-                        });
-                      },
-                    ),
-
-                    // Obscure Blur Slider
-                    ListTile(
-                      title: const Text('Obscure Blur Intensity'),
-                      subtitle: Slider(
-                        value: _obscure,
-                        min: 0.0,
-                        max: 1.0,
-                        divisions: 10,
-                        activeColor: Colors.deepPurpleAccent,
-                        label: _obscure.toStringAsFixed(1),
-                        onChanged: (val) {
-                          setState(() {
-                            _obscure = val;
-                          });
-                        },
-                      ),
-                    ),
-
-                     // Viewport Fraction Slider
-                    ListTile(
-                      title: const Text('Viewport Fraction (Drag Area)'),
-                      subtitle: Slider(
-                        value: _viewportFraction,
-                        min: 0.15,
-                        max: 0.45,
-                        activeColor: Colors.deepPurpleAccent,
-                        label: _viewportFraction.toStringAsFixed(2),
-                        onChanged: (val) {
-                          setState(() {
-                            _viewportFraction = val;
-                          });
-                        },
-                      ),
-                    ),
-
-                    // Custom Height Toggle
-                    SwitchListTile(
-                      title: const Text('Custom Container Height'),
-                      subtitle: const Text('Manually constrain the carousel container height'),
-                      value: _useCustomHeight,
-                      activeThumbColor: Colors.deepPurpleAccent,
-                      onChanged: (val) {
-                        setState(() {
-                          _useCustomHeight = val;
-                        });
-                      },
-                    ),
-
-                    // Custom Height Slider
-                    if (_useCustomHeight)
+                      // Carousel Mode Dropdown
                       ListTile(
-                        title: const Text('Carousel Height'),
+                        title: const Text('Carousel Mode'),
+                        subtitle: const Text('Choose layout style preset'),
+                        trailing: SizedBox(
+                          width: 140,
+                          child: DropdownButton<CoverflowMode>(
+                            isExpanded: true,
+                            value: _mode,
+                            underline: const SizedBox(),
+                            onChanged: (CoverflowMode? newValue) {
+                              if (newValue != null) {
+                                setState(() {
+                                  _mode = newValue;
+                                  _viewportFraction =
+                                      newValue == CoverflowMode.classic
+                                      ? 0.88
+                                      : 0.28;
+                                });
+                              }
+                            },
+                            items: CoverflowMode.values.map((mode) {
+                              return DropdownMenuItem<CoverflowMode>(
+                                value: mode,
+                                child: Text(
+                                  mode == CoverflowMode.coverflow
+                                      ? 'Coverflow'
+                                      : 'Classic',
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                      const Divider(height: 24, color: Colors.grey),
+
+                      // Infinite Scroll Toggle
+                      SwitchListTile(
+                        title: const Text('Infinite Scroll'),
+                        subtitle: const Text('Enable wrap-around page looping'),
+                        value: _isInfinite,
+                        activeThumbColor: Colors.deepPurpleAccent,
+                        onChanged: (val) {
+                          setState(() {
+                            _isInfinite = val;
+                          });
+                        },
+                      ),
+
+                      // Obscure Blur Slider
+                      ListTile(
+                        title: const Text('Obscure Blur Intensity'),
                         subtitle: Slider(
-                          value: _carouselHeight,
-                          min: 280.0,
-                          max: 450.0,
+                          value: _obscure,
+                          min: 0.0,
+                          max: 1.0,
+                          divisions: 10,
                           activeColor: Colors.deepPurpleAccent,
-                          label: '${_carouselHeight.toStringAsFixed(0)}px',
+                          label: _obscure.toStringAsFixed(1),
                           onChanged: (val) {
                             setState(() {
-                              _carouselHeight = val;
+                              _obscure = val;
                             });
                           },
                         ),
                       ),
 
-                    // Autoplay Toggle
-                    SwitchListTile(
-                      title: const Text('Autoplay'),
-                      subtitle: const Text('Auto-advance pages at a set interval'),
-                      value: _autoplay,
-                      activeThumbColor: Colors.deepPurpleAccent,
-                      onChanged: (val) {
-                        setState(() {
-                          _autoplay = val;
-                        });
-                      },
-                    ),
-
-                    // Autoplay Interval Slider
-                    if (_autoplay)
+                      // Viewport Fraction Slider
                       ListTile(
-                        title: const Text('Autoplay Interval'),
+                        title: const Text('Viewport Fraction (Drag Area)'),
                         subtitle: Slider(
-                          value: _autoplayIntervalSeconds,
-                          min: 1.0,
-                          max: 8.0,
-                          divisions: 14,
+                          value: _viewportFraction,
+                          min: 0.15,
+                          max: 1.0,
                           activeColor: Colors.deepPurpleAccent,
-                          label: '${_autoplayIntervalSeconds.toStringAsFixed(1)}s',
+                          label: _viewportFraction.toStringAsFixed(2),
                           onChanged: (val) {
                             setState(() {
-                              _autoplayIntervalSeconds = val;
+                              _viewportFraction = val;
                             });
                           },
                         ),
                       ),
 
-                    // Entry Animation Selection Dropdown
-                    ListTile(
-                      title: const Text('Entry Animation'),
-                      trailing: SizedBox(
-                        width: 140,
-                        child: DropdownButton<CoverflowEntryAnimation>(
-                          isExpanded: true,
-                          value: _entryAnimation,
-                          underline: const SizedBox(),
-                          onChanged: (CoverflowEntryAnimation? newValue) {
-                            if (newValue != null) {
+                      // Custom Height Toggle
+                      SwitchListTile(
+                        title: const Text('Custom Container Height'),
+                        subtitle: const Text(
+                          'Manually constrain the carousel container height',
+                        ),
+                        value: _useCustomHeight,
+                        activeThumbColor: Colors.deepPurpleAccent,
+                        onChanged: (val) {
+                          setState(() {
+                            _useCustomHeight = val;
+                          });
+                        },
+                      ),
+
+                      // Custom Height Slider
+                      if (_useCustomHeight)
+                        ListTile(
+                          title: const Text('Carousel Height'),
+                          subtitle: Slider(
+                            value: _carouselHeight,
+                            min: 280.0,
+                            max: 450.0,
+                            activeColor: Colors.deepPurpleAccent,
+                            label: '${_carouselHeight.toStringAsFixed(0)}px',
+                            onChanged: (val) {
                               setState(() {
-                                _entryAnimation = newValue;
+                                _carouselHeight = val;
                               });
-                              _reloadCarousel();
-                            }
-                          },
-                          items: CoverflowEntryAnimation.values.map((anim) {
-                            return DropdownMenuItem<CoverflowEntryAnimation>(
-                              value: anim,
-                              child: Text(
-                                anim.name,
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            );
-                          }).toList(),
+                            },
+                          ),
                         ),
+
+                      // Autoplay Toggle
+                      SwitchListTile(
+                        title: const Text('Autoplay'),
+                        subtitle: const Text(
+                          'Auto-advance pages at a set interval',
+                        ),
+                        value: _autoplay,
+                        activeThumbColor: Colors.deepPurpleAccent,
+                        onChanged: (val) {
+                          setState(() {
+                            _autoplay = val;
+                          });
+                        },
                       ),
-                    ),
 
-                    // Mouse Scroll Wheel Toggle
-                    SwitchListTile(
-                      title: const Text('Mouse Scroll Wheel'),
-                      subtitle: const Text('Scroll mouse wheel or trackpad to navigate'),
-                      value: _enableScrollWheel,
-                      activeThumbColor: Colors.deepPurpleAccent,
-                      onChanged: (val) {
-                        setState(() {
-                          _enableScrollWheel = val;
-                        });
-                      },
-                    ),
+                      // Autoplay Interval Slider
+                      if (_autoplay)
+                        ListTile(
+                          title: const Text('Autoplay Interval'),
+                          subtitle: Slider(
+                            value: _autoplayIntervalSeconds,
+                            min: 1.0,
+                            max: 8.0,
+                            divisions: 14,
+                            activeColor: Colors.deepPurpleAccent,
+                            label:
+                                '${_autoplayIntervalSeconds.toStringAsFixed(1)}s',
+                            onChanged: (val) {
+                              setState(() {
+                                _autoplayIntervalSeconds = val;
+                              });
+                            },
+                          ),
+                        ),
 
-                    // Hover Tilt Toggle
-                    SwitchListTile(
-                      title: const Text('3D Hover Tilt'),
-                      subtitle: const Text('Tilt cards in 3D when hovered by mouse'),
-                      value: _enableHoverTilt,
-                      activeThumbColor: Colors.deepPurpleAccent,
-                      onChanged: (val) {
-                        setState(() {
-                          _enableHoverTilt = val;
-                        });
-                      },
-                    ),
+                      // Shadow Toggle
+                      SwitchListTile(
+                        title: const Text('3D Elevation Shadows'),
+                        subtitle: const Text(
+                          'Render dynamic drop shadows under cards',
+                        ),
+                        value: _enableShadow,
+                        activeThumbColor: Colors.deepPurpleAccent,
+                        onChanged: (val) {
+                          setState(() {
+                            _enableShadow = val;
+                          });
+                        },
+                      ),
 
-                    // Hover Tilt Intensity Slider
-                    if (_enableHoverTilt)
+                      // Shadow Elevation Slider
+                      if (_enableShadow)
+                        ListTile(
+                          title: const Text('Shadow Elevation'),
+                          subtitle: Slider(
+                            value: _shadowElevation,
+                            min: 0.0,
+                            max: 20.0,
+                            activeColor: Colors.deepPurpleAccent,
+                            label: '${_shadowElevation.toStringAsFixed(1)}px',
+                            onChanged: (val) {
+                              setState(() {
+                                _shadowElevation = val;
+                              });
+                            },
+                          ),
+                        ),
+
+                      // Card Corner Radius Slider
                       ListTile(
-                        title: const Text('Max Tilt Angle (Hover)'),
+                        title: const Text('Card Corner Radius'),
                         subtitle: Slider(
-                          value: _maxHoverTiltAngle,
-                          min: 0.05,
-                          max: 0.35,
+                          value: _cardCornerRadiusValue,
+                          min: 0.0,
+                          max: 40.0,
                           activeColor: Colors.deepPurpleAccent,
-                          label: '${(_maxHoverTiltAngle * 180 / 3.14159).toStringAsFixed(0)}°',
+                          label:
+                              '${_cardCornerRadiusValue.toStringAsFixed(0)}px',
                           onChanged: (val) {
                             setState(() {
-                              _maxHoverTiltAngle = val;
+                              _cardCornerRadiusValue = val;
                             });
                           },
                         ),
                       ),
 
-                    const SizedBox(height: 12),
-                    Center(
-                      child: TextButton.icon(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.pinkAccent,
+                      // Entry Animation Selection Dropdown
+                      ListTile(
+                        title: const Text('Entry Animation'),
+                        trailing: SizedBox(
+                          width: 140,
+                          child: DropdownButton<CoverflowEntryAnimation>(
+                            isExpanded: true,
+                            value: _entryAnimation,
+                            underline: const SizedBox(),
+                            onChanged: (CoverflowEntryAnimation? newValue) {
+                              if (newValue != null) {
+                                setState(() {
+                                  _entryAnimation = newValue;
+                                });
+                                _reloadCarousel();
+                              }
+                            },
+                            items: CoverflowEntryAnimation.values.map((anim) {
+                              return DropdownMenuItem<CoverflowEntryAnimation>(
+                                value: anim,
+                                child: Text(
+                                  anim.name,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              );
+                            }).toList(),
+                          ),
                         ),
-                        onPressed: _reloadCarousel,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Re-trigger Entry Animation'),
                       ),
-                    ),
-                  ],
+
+                      // Mouse Scroll Wheel Toggle
+                      SwitchListTile(
+                        title: const Text('Mouse Scroll Wheel'),
+                        subtitle: const Text(
+                          'Scroll mouse wheel or trackpad to navigate',
+                        ),
+                        value: _enableScrollWheel,
+                        activeThumbColor: Colors.deepPurpleAccent,
+                        onChanged: (val) {
+                          setState(() {
+                            _enableScrollWheel = val;
+                          });
+                        },
+                      ),
+
+                      // Hover Tilt Toggle
+                      SwitchListTile(
+                        title: const Text('3D Hover Tilt'),
+                        subtitle: const Text(
+                          'Tilt cards in 3D when hovered by mouse',
+                        ),
+                        value: _enableHoverTilt,
+                        activeThumbColor: Colors.deepPurpleAccent,
+                        onChanged: (val) {
+                          setState(() {
+                            _enableHoverTilt = val;
+                          });
+                        },
+                      ),
+
+                      // Hover Tilt Intensity Slider
+                      if (_enableHoverTilt)
+                        ListTile(
+                          title: const Text('Max Tilt Angle (Hover)'),
+                          subtitle: Slider(
+                            value: _maxHoverTiltAngle,
+                            min: 0.05,
+                            max: 0.35,
+                            activeColor: Colors.deepPurpleAccent,
+                            label:
+                                '${(_maxHoverTiltAngle * 180 / 3.14159).toStringAsFixed(0)}°',
+                            onChanged: (val) {
+                              setState(() {
+                                _maxHoverTiltAngle = val;
+                              });
+                            },
+                          ),
+                        ),
+
+                      const SizedBox(height: 12),
+                      Center(
+                        child: TextButton.icon(
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.pinkAccent,
+                          ),
+                          onPressed: _reloadCarousel,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Re-trigger Entry Animation'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
             ],
           ),
         ),

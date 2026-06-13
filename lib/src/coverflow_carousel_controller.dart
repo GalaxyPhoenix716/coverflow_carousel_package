@@ -49,4 +49,3 @@ class CoverflowCarouselController {
     _animateTo = null;
   }
 }
-

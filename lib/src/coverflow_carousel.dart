@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/scheduler.dart';
 import 'dart:async';
 import 'coverflow_carousel_controller.dart';
 import 'coverflow_carousel_renderer.dart';
@@ -32,6 +33,15 @@ enum CoverflowEntryAnimation {
   stack,
 }
 
+/// Defines the layout modes available for the carousel.
+enum CoverflowMode {
+  /// 3D Coverflow layout where off-center cards are skewed, scaled down, and layered.
+  coverflow,
+
+  /// Flat carousel slider layout where cards slide edge-to-edge with no 3D rotation.
+  classic,
+}
+
 /// A 3D Coverflow Carousel widget for Flutter.
 ///
 /// Displays a scrollable list of cards in a 3D perspective layout where the
@@ -49,10 +59,15 @@ class CoverflowCarousel extends StatefulWidget {
   /// The [index] provided is mapped to a real index in `[0, itemCount - 1]`.
   final IndexedWidgetBuilder itemBuilder;
 
+  /// The layout mode of the carousel.
+  ///
+  /// Defaults to [CoverflowMode.coverflow].
+  final CoverflowMode mode;
+
   /// The number of visible cards to render on each side of the active center card.
   ///
-  /// Setting this higher renders more background cards. Defaults to `3`.
-  final int visibleItems;
+  /// If null, resolved dynamically based on [mode]: 3 for coverflow, 1 for classic.
+  final int? visibleItems;
 
   /// The initial card index to focus/center.
   ///
@@ -72,18 +87,18 @@ class CoverflowCarousel extends StatefulWidget {
 
   /// The rotation angle (in radians) applied to off-center cards along the Y-axis.
   ///
-  /// Negative values tilt cards inwards, creating a coverflow folder look. Defaults to `-0.35`.
-  final double skewAngle;
+  /// If null, resolved dynamically based on [mode]: -0.35 for coverflow, 0.0 for classic.
+  final double? skewAngle;
 
   /// Horizontal spacing between the center card and the immediately adjacent cards (distance = 1).
   ///
-  /// Represents logical pixels. Defaults to `45`.
-  final double nearCardSpacing;
+  /// If null, resolved dynamically based on [mode]: 45 for coverflow, [itemWidth] for classic.
+  final double? nearCardSpacing;
 
   /// Horizontal spacing between adjacent background cards (distance >= 2).
   ///
-  /// Represents logical pixels. Defaults to `50`.
-  final double farCardSpacing;
+  /// If null, resolved dynamically based on [mode]: 50 for coverflow, [itemWidth] for classic.
+  final double? farCardSpacing;
 
   /// Perspective factor for 3D projection, modifying the matrix entry `(3, 2)`.
   ///
@@ -108,8 +123,8 @@ class CoverflowCarousel extends StatefulWidget {
 
   /// Fraction of the viewport occupied by each card scroll slot.
   ///
-  /// Controls drag responsiveness and scrolling speed. Defaults to `0.25`.
-  final double viewportFraction;
+  /// Controls drag responsiveness and scrolling speed. Defaults to `0.25` for coverflow, `0.88` for classic.
+  final double? viewportFraction;
 
   /// Whether the carousel should wrap around infinitely at the ends.
   ///
@@ -201,18 +216,19 @@ class CoverflowCarousel extends StatefulWidget {
     required this.itemBuilder,
     required this.itemWidth,
     required this.itemHeight,
-    this.visibleItems = 3,
+    this.mode = CoverflowMode.coverflow,
+    this.visibleItems,
     this.obscure = 0,
-    this.skewAngle = -0.35,
+    this.skewAngle,
     this.initialPage = 0,
     this.onPageChanged,
-    this.nearCardSpacing = 45,
-    this.farCardSpacing = 50,
+    this.nearCardSpacing,
+    this.farCardSpacing,
     this.perspective = 0.0025,
     this.animationDuration = const Duration(milliseconds: 350),
     this.animationCurve = Curves.easeOutCubic,
     this.controller,
-    this.viewportFraction = 0.25,
+    this.viewportFraction,
     this.isInfinite = false,
     this.entryAnimation = CoverflowEntryAnimation.none,
     this.entryAnimationDuration = const Duration(milliseconds: 1000),
@@ -229,7 +245,10 @@ class CoverflowCarousel extends StatefulWidget {
     this.shadowColor = Colors.black,
     this.elevation = 8.0,
     this.cardBorderRadius = const BorderRadius.all(Radius.circular(24)),
-  }) : assert(height == null || height >= itemHeight, 'height must be greater than or equal to itemHeight to prevent layout clipping.');
+  }) : assert(
+         height == null || height >= itemHeight,
+         'height must be greater than or equal to itemHeight to prevent layout clipping.',
+       );
 
   @override
   State<CoverflowCarousel> createState() => _CoverflowCarouselState();
@@ -255,7 +274,10 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
     if (widget.itemCount <= 1) return;
 
     _autoplayTimer?.cancel();
-    _autoplayTimer = Timer.periodic(widget.autoplayInterval, (_) => _handleAutoplayTick());
+    _autoplayTimer = Timer.periodic(
+      widget.autoplayInterval,
+      (_) => _handleAutoplayTick(),
+    );
   }
 
   void _pauseAutoplay() {
@@ -298,8 +320,11 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
         ? (10000 * widget.itemCount) + widget.initialPage
         : widget.initialPage;
     currentPage = _initialVirtualPage.toDouble();
+    final resolvedViewportFraction =
+        widget.viewportFraction ??
+        (widget.mode == CoverflowMode.classic ? 0.88 : 0.25);
     _controller = PageController(
-      viewportFraction: widget.viewportFraction,
+      viewportFraction: resolvedViewportFraction,
       initialPage: _initialVirtualPage,
     );
 
@@ -340,14 +365,18 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
 
   void _handlePointerSignal(PointerSignalEvent event) {
     if (event is PointerScrollEvent) {
-      final double delta = event.scrollDelta.dy != 0 ? event.scrollDelta.dy : event.scrollDelta.dx;
+      final double delta = event.scrollDelta.dy != 0
+          ? event.scrollDelta.dy
+          : event.scrollDelta.dx;
       if (delta.abs() < 1) return;
 
       if (!_controller.hasClients) return;
 
       final now = event.timeStamp;
-      final throttleDuration = widget.animationDuration - const Duration(milliseconds: 50);
-      if (_lastScrollEventTimeStamp != null && (now - _lastScrollEventTimeStamp!) < throttleDuration) {
+      final throttleDuration =
+          widget.animationDuration - const Duration(milliseconds: 50);
+      if (_lastScrollEventTimeStamp != null &&
+          (now - _lastScrollEventTimeStamp!) < throttleDuration) {
         return;
       }
 
@@ -380,7 +409,14 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
       _attachController();
     }
 
-    if (oldWidget.viewportFraction != widget.viewportFraction ||
+    final oldResolvedViewportFraction =
+        oldWidget.viewportFraction ??
+        (oldWidget.mode == CoverflowMode.classic ? 0.88 : 0.25);
+    final resolvedViewportFraction =
+        widget.viewportFraction ??
+        (widget.mode == CoverflowMode.classic ? 0.88 : 0.25);
+
+    if (oldResolvedViewportFraction != resolvedViewportFraction ||
         oldWidget.isInfinite != widget.isInfinite) {
       final double currentRawPage = _controller.positions.isNotEmpty
           ? _controller.page ?? widget.initialPage.toDouble()
@@ -409,7 +445,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
       _controller.removeListener(_pageListener);
       _controller.dispose();
       _controller = PageController(
-        viewportFraction: widget.viewportFraction,
+        viewportFraction: resolvedViewportFraction,
         initialPage: nextPageIndex,
       );
       currentPage = nextPageIndex.toDouble();
@@ -483,6 +519,18 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
 
   @override
   Widget build(BuildContext context) {
+    final resolvedVisibleItems =
+        widget.visibleItems ?? (widget.mode == CoverflowMode.classic ? 1 : 3);
+    final resolvedSkewAngle =
+        widget.skewAngle ??
+        (widget.mode == CoverflowMode.classic ? 0.0 : -0.35);
+    final resolvedNearCardSpacing =
+        widget.nearCardSpacing ??
+        (widget.mode == CoverflowMode.classic ? widget.itemWidth : 45.0);
+    final resolvedFarCardSpacing =
+        widget.farCardSpacing ??
+        (widget.mode == CoverflowMode.classic ? widget.itemWidth : 50.0);
+
     final Widget carouselContent = SizedBox(
       key: const Key('coverflow-container'),
       height: widget.height ?? widget.itemHeight + 80,
@@ -520,12 +568,12 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
                     itemWidth: widget.itemWidth,
                     itemHeight: widget.itemHeight,
                     itemCount: widget.itemCount,
-                    visibleItems: widget.visibleItems,
+                    visibleItems: resolvedVisibleItems,
                     itemBuilder: widget.itemBuilder,
                     obscure: widget.obscure,
-                    skewAngle: widget.skewAngle,
-                    nearCardSpacing: widget.nearCardSpacing,
-                    farCardSpacing: widget.farCardSpacing,
+                    skewAngle: resolvedSkewAngle,
+                    nearCardSpacing: resolvedNearCardSpacing,
+                    farCardSpacing: resolvedFarCardSpacing,
                     perspective: widget.perspective,
                     animationDuration: widget.animationDuration,
                     animationCurve: widget.animationCurve,
@@ -558,12 +606,12 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
                         itemWidth: widget.itemWidth,
                         itemHeight: widget.itemHeight,
                         itemCount: widget.itemCount,
-                        visibleItems: widget.visibleItems,
+                        visibleItems: resolvedVisibleItems,
                         itemBuilder: widget.itemBuilder,
                         obscure: widget.obscure,
-                        skewAngle: widget.skewAngle,
-                        nearCardSpacing: widget.nearCardSpacing,
-                        farCardSpacing: widget.farCardSpacing,
+                        skewAngle: resolvedSkewAngle,
+                        nearCardSpacing: resolvedNearCardSpacing,
+                        farCardSpacing: resolvedFarCardSpacing,
                         perspective: widget.perspective,
                         animationDuration: widget.animationDuration,
                         animationCurve: widget.animationCurve,
@@ -591,10 +639,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
     Widget result = carouselContent;
 
     if (widget.enableScrollWheel) {
-      result = Listener(
-        onPointerSignal: _handlePointerSignal,
-        child: result,
-      );
+      result = Listener(onPointerSignal: _handlePointerSignal, child: result);
     }
 
     if (widget.autoplay && widget.autoplayPauseOnHover) {

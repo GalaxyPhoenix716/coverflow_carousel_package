@@ -23,4 +23,3 @@ class CardModel {
   /// Creates a new [CardModel] instance.
   CardModel({required this.id, required this.child, this.zIndex = 0.0});
 }
-

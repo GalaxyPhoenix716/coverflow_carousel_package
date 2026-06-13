@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/gestures.dart';
 import 'package:coverflow_carousel/coverflow_carousel.dart';
+import 'package:coverflow_carousel/src/coverflow_carousel_renderer.dart';
 
 void main() {
   testWidgets('CoverflowCarousel renders correctly with basic parameters',
@@ -732,6 +733,133 @@ void main() {
 
     // Verify it now transitioned to page 1
     expect(pageChangedIndex, 1);
+  });
+
+  testWidgets('CoverflowCarousel 3D elevation shadows render and shift offset on hover',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 3,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            enableShadow: true,
+            elevation: 10.0,
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    // Find the container drawing the shadows on the centered card
+    final hoverTiltFinder = find.byWidgetPredicate(
+      (widget) => widget.runtimeType.toString() == '_CoverflowHoverTilt' && (widget as dynamic).enabled == true,
+    );
+    expect(hoverTiltFinder, findsOneWidget);
+
+    final containerFinder = find.descendant(
+      of: hoverTiltFinder,
+      matching: find.byWidgetPredicate(
+        (widget) => widget is Container && widget.decoration is BoxDecoration && (widget.decoration as BoxDecoration).boxShadow != null,
+      ),
+    ).first;
+    expect(containerFinder, findsOneWidget);
+
+    final containerWidget = tester.widget<Container>(containerFinder);
+    final decoration = containerWidget.decoration as BoxDecoration;
+    expect(decoration.boxShadow, isNotNull);
+    expect(decoration.boxShadow!.length, 2); // 2 layered shadows
+
+    // Capture initial shadow offset
+    final initialOffset1 = decoration.boxShadow![0].offset;
+
+    // Simulate mouse hover using TestPointer
+    final itemCenter = tester.getCenter(find.text('Item 0'));
+    final pointer = TestPointer(1, PointerDeviceKind.mouse);
+
+    // Hover offset on active item
+    await tester.sendEventToBinding(
+      pointer.hover(itemCenter + const Offset(50, -50)),
+    );
+    await tester.pump();
+
+    // Verify shadow offset shifted dynamically
+    final updatedContainerWidget = tester.widget<Container>(containerFinder);
+    final updatedDecoration = updatedContainerWidget.decoration as BoxDecoration;
+    final updatedOffset1 = updatedDecoration.boxShadow![0].offset;
+
+    expect(updatedOffset1, isNot(initialOffset1));
+
+    // Exit hover
+    await tester.sendEventToBinding(
+      pointer.hover(const Offset(0, 0)),
+    );
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('CoverflowCarousel resolves classic mode defaults and custom overrides correctly',
+      (WidgetTester tester) async {
+    // 1. Check classic presets
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 3,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            mode: CoverflowMode.classic,
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    final renderer = tester.widget<CoverflowCarouselRenderer>(find.byType(CoverflowCarouselRenderer));
+    expect(renderer.visibleItems, 1);
+    expect(renderer.skewAngle, 0.0);
+    expect(renderer.nearCardSpacing, 200.0); // equal to itemWidth
+    expect(renderer.farCardSpacing, 200.0);
+
+    final pageView = tester.widget<PageView>(find.byType(PageView));
+    expect(pageView.controller!.viewportFraction, 0.88);
+
+    // 2. Check custom overrides on classic mode
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 3,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            mode: CoverflowMode.classic,
+            visibleItems: 2,
+            skewAngle: -0.1,
+            nearCardSpacing: 100,
+            viewportFraction: 0.75,
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    final overriddenRenderer = tester.widget<CoverflowCarouselRenderer>(find.byType(CoverflowCarouselRenderer));
+    expect(overriddenRenderer.visibleItems, 2);
+    expect(overriddenRenderer.skewAngle, -0.1);
+    expect(overriddenRenderer.nearCardSpacing, 100.0);
+    expect(overriddenRenderer.farCardSpacing, 200.0); // defaults to itemWidth because not overridden
+
+    final overriddenPageView = tester.widget<PageView>(find.byType(PageView));
+    expect(overriddenPageView.controller!.viewportFraction, 0.75);
   });
 }
 
