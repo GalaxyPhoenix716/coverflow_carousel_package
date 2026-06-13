@@ -72,3 +72,14 @@
 1. **Smooth Scroll**: The scroll is now smoother
 
 2. **New Demos**: Added new demos
+
+# 1.3.0
+
+1. **Optimized Card Blur**: Replaced expensive `BackdropFilter` layout stacking with direct, offscreen hardware-accelerated `ImageFiltered` composition, eliminating GPU framebuffer readbacks and frame drops.
+2. **Customizable Height Constraints**: Added `height` configuration to the carousel with developer safety assertions preventing layout overflows.
+3. **Scroll Wheel Toggle**: Exposed `enableScrollWheel` to enable or disable mouse scroll wheel navigation to prevent vertical web scroll trapping.
+4. **UX-Polished Autoplay Support**: Integrated `autoplay`, `autoplayInterval`, and `autoplayPauseOnHover` background loops with scroll-linked pause/resume controls (pauses on pointer drag and mouse hover).
+5. **Skew-Aware 3D Elevation Shadows**: Added unified shadow parameters (`enableShadow`, `shadowColor`, `elevation`, and `cardBorderRadius`) drawing layered, soft double shadows. Background cards cast static skew-aligned shadows, and the centered card dynamically shifts its shadow offset simulating a shifting light source.
+6. **Center Overlay Tilt Integration & Size Constraints**: Nested overlay stack elements inside the 3D hover region to tilt badges and play buttons in synchronization with the card surface, while explicitly setting `fit: StackFit.expand` on stack layers to preserve correct card dimensions.
+7. **Buttery-Smooth Hover Interpolation**: Transitioned hover tilt updates to a frame-rate independent `Ticker`-based smooth lerp at 15% per frame with auto-sleeping when idle.
+8. **Customizable Carousel Mode**: Added the `mode` parameter supporting `CoverflowMode.coverflow` (3D stacked) and `CoverflowMode.classic` (flat edge-to-edge carousel slider) presets with dynamic parameter resolutions (visible items, skew, spacing, and viewport fraction).
