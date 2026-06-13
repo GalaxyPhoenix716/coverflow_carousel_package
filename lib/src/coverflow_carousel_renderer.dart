@@ -76,6 +76,18 @@ class CoverflowCarouselRenderer extends StatelessWidget {
   /// The maximum tilt angle (in radians) applied during the 3D hover effect.
   final double maxHoverTiltAngle;
 
+  /// Whether to enable 3D perspective shadows on cards.
+  final bool enableShadow;
+
+  /// The color of the drop shadow.
+  final Color shadowColor;
+
+  /// The shadow elevation/depth.
+  final double elevation;
+
+  /// The card corner border radius.
+  final BorderRadius cardBorderRadius;
+
   /// Creates a [CoverflowCarouselRenderer] to lay out and paint the carousel cards.
   const CoverflowCarouselRenderer({
     super.key,
@@ -100,6 +112,10 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     required this.initialPage,
     required this.enableHoverTilt,
     required this.maxHoverTiltAngle,
+    required this.enableShadow,
+    required this.shadowColor,
+    required this.elevation,
+    required this.cardBorderRadius,
     this.centerOverlayBuilder,
   });
 
@@ -270,6 +286,10 @@ class CoverflowCarouselRenderer extends StatelessWidget {
           enabled: enableHoverTilt && isCentered,
           maxTiltAngle: maxHoverTiltAngle,
           perspective: perspective,
+          enableShadow: enableShadow,
+          shadowColor: shadowColor,
+          elevation: elevation,
+          borderRadius: cardBorderRadius,
           child: cardChild,
         ),
       ),
@@ -434,12 +454,20 @@ class _CoverflowHoverTilt extends StatefulWidget {
   final bool enabled;
   final double maxTiltAngle;
   final double perspective;
+  final bool enableShadow;
+  final Color shadowColor;
+  final double elevation;
+  final BorderRadius borderRadius;
 
   const _CoverflowHoverTilt({
     required this.child,
     required this.enabled,
     required this.maxTiltAngle,
     required this.perspective,
+    required this.enableShadow,
+    required this.shadowColor,
+    required this.elevation,
+    required this.borderRadius,
   });
 
   @override
@@ -509,10 +537,46 @@ class _CoverflowHoverTiltState extends State<_CoverflowHoverTilt>
     _controller.forward(from: 0.0);
   }
 
+  List<BoxShadow> _buildDynamicShadows() {
+    final double elev = widget.elevation;
+    if (elev <= 0) return [];
+
+    return [
+      BoxShadow(
+        color: widget.shadowColor.withValues(alpha: 0.18),
+        blurRadius: elev * 1.5,
+        offset: Offset(
+          -_tiltY * elev * 2.0,
+          elev + (_tiltX * elev * 2.0),
+        ),
+        spreadRadius: -elev * 0.1,
+      ),
+      BoxShadow(
+        color: widget.shadowColor.withValues(alpha: 0.1),
+        blurRadius: elev * 3.0,
+        offset: Offset(
+          -_tiltY * elev * 3.0,
+          elev * 1.5 + (_tiltX * elev * 3.0),
+        ),
+        spreadRadius: -elev * 0.2,
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
+    final Widget content = Container(
+      decoration: BoxDecoration(
+        borderRadius: widget.borderRadius,
+        boxShadow: widget.enableShadow ? _buildDynamicShadows() : null,
+      ),
+      child: RepaintBoundary(
+        child: widget.child,
+      ),
+    );
+
     if (!widget.enabled) {
-      return widget.child;
+      return content;
     }
 
     final transform = Matrix4.identity()
@@ -527,9 +591,7 @@ class _CoverflowHoverTiltState extends State<_CoverflowHoverTilt>
       child: Transform(
         alignment: Alignment.center,
         transform: transform,
-        child: RepaintBoundary(
-          child: widget.child,
-        ),
+        child: content,
       ),
     );
   }

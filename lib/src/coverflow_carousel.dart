@@ -174,6 +174,26 @@ class CoverflowCarousel extends StatefulWidget {
   /// Defaults to `true`.
   final bool autoplayPauseOnHover;
 
+  /// Whether to enable built-in 3D perspective shadows on cards.
+  ///
+  /// Defaults to `true`.
+  final bool enableShadow;
+
+  /// The color of the cast drop shadow.
+  ///
+  /// Defaults to [Colors.black].
+  final Color shadowColor;
+
+  /// The depth/intensity of the cast drop shadow.
+  ///
+  /// Controls offset and blur radius spread. Defaults to `8.0`.
+  final double elevation;
+
+  /// The border radius matching the card child's shape to crop the shadow path correctly.
+  ///
+  /// Defaults to `BorderRadius.circular(24)`.
+  final BorderRadius cardBorderRadius;
+
   /// Creates a Coverflow Carousel with a builder pattern.
   const CoverflowCarousel.builder({
     super.key,
@@ -205,6 +225,10 @@ class CoverflowCarousel extends StatefulWidget {
     this.autoplay = false,
     this.autoplayInterval = const Duration(seconds: 3),
     this.autoplayPauseOnHover = true,
+    this.enableShadow = true,
+    this.shadowColor = Colors.black,
+    this.elevation = 8.0,
+    this.cardBorderRadius = const BorderRadius.all(Radius.circular(24)),
   }) : assert(height == null || height >= itemHeight, 'height must be greater than or equal to itemHeight to prevent layout clipping.');
 
   @override
@@ -512,6 +536,10 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
                     centerOverlayBuilder: widget.centerOverlayBuilder,
                     enableHoverTilt: widget.enableHoverTilt,
                     maxHoverTiltAngle: widget.maxHoverTiltAngle,
+                    enableShadow: widget.enableShadow,
+                    shadowColor: widget.shadowColor,
+                    elevation: widget.elevation,
+                    cardBorderRadius: widget.cardBorderRadius,
                   );
                 },
               ),
@@ -546,6 +574,10 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
                         centerOverlayBuilder: widget.centerOverlayBuilder,
                         enableHoverTilt: widget.enableHoverTilt,
                         maxHoverTiltAngle: widget.maxHoverTiltAngle,
+                        enableShadow: widget.enableShadow,
+                        shadowColor: widget.shadowColor,
+                        elevation: widget.elevation,
+                        cardBorderRadius: widget.cardBorderRadius,
                       );
                     },
                   ),
