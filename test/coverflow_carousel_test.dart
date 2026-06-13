@@ -528,5 +528,45 @@ void main() {
     );
     await tester.pumpAndSettle();
   });
+
+  testWidgets('CoverflowCarousel scroll wheel can be disabled via enableScrollWheel',
+      (WidgetTester tester) async {
+    int pageChangedIndex = -1;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 5,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            enableScrollWheel: false,
+            onPageChanged: (index) {
+              pageChangedIndex = index;
+            },
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Item 0'), findsOneWidget);
+
+    final carouselCenter = tester.getCenter(find.byType(CoverflowCarousel));
+    final pointer = TestPointer(1, PointerDeviceKind.mouse);
+    pointer.hover(carouselCenter);
+
+    // Send PointerScrollEvent for scrolling forward
+    await tester.sendEventToBinding(
+      pointer.scroll(const Offset(0, 100)),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify it did NOT change to page 1 because scroll wheel was disabled
+    expect(pageChangedIndex, -1);
+  });
 }
 

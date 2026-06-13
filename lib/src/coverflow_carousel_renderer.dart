@@ -253,39 +253,26 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     }
 
     final double overlayOpacity = (1.0 - distance).clamp(0.0, 1.0);
-    Widget cardWidget = Stack(
-      children: [
-        Container(
-          width: width,
-          height: height,
-          padding: EdgeInsets.symmetric(vertical: verticalPadding),
-          child: AbsorbPointer(
-            absorbing: !isCentered,
-            child: _CoverflowHoverTilt(
-              enabled: enableHoverTilt && isCentered,
-              maxTiltAngle: maxHoverTiltAngle,
-              perspective: perspective,
-              child: child,
-            ),
-          ),
-        ),
+    final Widget cardChild = obscure > 0 && distance > 0
+        ? ImageFiltered(
+            imageFilter: getFilter(index),
+            child: child,
+          )
+        : child;
 
-        if (obscure > 0 && distance > 0)
-          Container(
-            width: width,
-            height: height,
-            padding: EdgeInsets.symmetric(
-              vertical: verticalPadding,
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: BackdropFilter(
-                filter: getFilter(index),
-                child: Container(),
-              ),
-            ),
-          ),
-      ],
+    Widget cardWidget = Container(
+      width: width,
+      height: height,
+      padding: EdgeInsets.symmetric(vertical: verticalPadding),
+      child: AbsorbPointer(
+        absorbing: !isCentered,
+        child: _CoverflowHoverTilt(
+          enabled: enableHoverTilt && isCentered,
+          maxTiltAngle: maxHoverTiltAngle,
+          perspective: perspective,
+          child: cardChild,
+        ),
+      ),
     );
 
     final realIndex = isInfinite && itemCount > 0

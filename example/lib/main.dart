@@ -45,6 +45,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
   int _activePage = 0;
   bool _enableHoverTilt = true;
   double _maxHoverTiltAngle = 0.15;
+  bool _enableScrollWheel = true;
 
   // Re-keying widget to easily trigger entry animation reload
   Key _carouselKey = UniqueKey();
@@ -123,6 +124,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                     entryAnimationCurve: Curves.easeOutBack,
                     enableHoverTilt: _enableHoverTilt,
                     maxHoverTiltAngle: _maxHoverTiltAngle,
+                    enableScrollWheel: _enableScrollWheel,
                     onPageChanged: (index) {
                       setState(() {
                         _activePage = index;
@@ -398,6 +400,19 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                           }).toList(),
                         ),
                       ),
+                    ),
+
+                    // Mouse Scroll Wheel Toggle
+                    SwitchListTile(
+                      title: const Text('Mouse Scroll Wheel'),
+                      subtitle: const Text('Scroll mouse wheel or trackpad to navigate'),
+                      value: _enableScrollWheel,
+                      activeThumbColor: Colors.deepPurpleAccent,
+                      onChanged: (val) {
+                        setState(() {
+                          _enableScrollWheel = val;
+                        });
+                      },
                     ),
 
                     // Hover Tilt Toggle
