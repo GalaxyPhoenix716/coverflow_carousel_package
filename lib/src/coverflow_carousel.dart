@@ -152,6 +152,12 @@ class CoverflowCarousel extends StatefulWidget {
   /// Defaults to `true`.
   final bool enableScrollWheel;
 
+  /// The total height of the carousel widget container.
+  ///
+  /// If not specified, defaults to [itemHeight] + 80 logical pixels to provide
+  /// sufficient space for 3D card perspective tilt, shadow elevations, and active card overlays.
+  final double? height;
+
   /// Creates a Coverflow Carousel with a builder pattern.
   const CoverflowCarousel.builder({
     super.key,
@@ -179,7 +185,8 @@ class CoverflowCarousel extends StatefulWidget {
     this.enableHoverTilt = true,
     this.maxHoverTiltAngle = 0.15,
     this.enableScrollWheel = true,
-  });
+    this.height,
+  }) : assert(height == null || height >= itemHeight, 'height must be greater than or equal to itemHeight to prevent layout clipping.');
 
   @override
   State<CoverflowCarousel> createState() => _CoverflowCarouselState();
@@ -375,7 +382,8 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
   @override
   Widget build(BuildContext context) {
     final Widget carouselContent = SizedBox(
-      height: widget.itemHeight + 80,
+      key: const Key('coverflow-container'),
+      height: widget.height ?? widget.itemHeight + 80,
       child: Stack(
         children: [
           PageView.builder(

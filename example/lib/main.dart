@@ -46,6 +46,8 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
   bool _enableHoverTilt = true;
   double _maxHoverTiltAngle = 0.15;
   bool _enableScrollWheel = true;
+  bool _useCustomHeight = false;
+  double _carouselHeight = 360.0;
 
   // Re-keying widget to easily trigger entry animation reload
   Key _carouselKey = UniqueKey();
@@ -107,7 +109,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
             children: [
               // 1. The Coverflow Carousel Container
               SizedBox(
-                height: 380,
+                height: _useCustomHeight ? _carouselHeight : 380,
                 child: Center(
                   child: CoverflowCarousel.builder(
                     key: _carouselKey,
@@ -115,6 +117,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                     itemCount: _demoCards.length,
                     itemWidth: 260,
                     itemHeight: 280,
+                    height: _useCustomHeight ? _carouselHeight : null,
                     visibleItems: 3,
                     isInfinite: _isInfinite,
                     obscure: _obscure,
@@ -355,7 +358,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                       ),
                     ),
 
-                    // Viewport Fraction Slider
+                     // Viewport Fraction Slider
                     ListTile(
                       title: const Text('Viewport Fraction (Drag Area)'),
                       subtitle: Slider(
@@ -371,6 +374,37 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                         },
                       ),
                     ),
+
+                    // Custom Height Toggle
+                    SwitchListTile(
+                      title: const Text('Custom Container Height'),
+                      subtitle: const Text('Manually constrain the carousel container height'),
+                      value: _useCustomHeight,
+                      activeThumbColor: Colors.deepPurpleAccent,
+                      onChanged: (val) {
+                        setState(() {
+                          _useCustomHeight = val;
+                        });
+                      },
+                    ),
+
+                    // Custom Height Slider
+                    if (_useCustomHeight)
+                      ListTile(
+                        title: const Text('Carousel Height'),
+                        subtitle: Slider(
+                          value: _carouselHeight,
+                          min: 280.0,
+                          max: 450.0,
+                          activeColor: Colors.deepPurpleAccent,
+                          label: '${_carouselHeight.toStringAsFixed(0)}px',
+                          onChanged: (val) {
+                            setState(() {
+                              _carouselHeight = val;
+                            });
+                          },
+                        ),
+                      ),
 
                     // Entry Animation Selection Dropdown
                     ListTile(

@@ -568,5 +568,33 @@ void main() {
     // Verify it did NOT change to page 1 because scroll wheel was disabled
     expect(pageChangedIndex, -1);
   });
+
+  testWidgets('CoverflowCarousel custom height constraint is applied',
+      (WidgetTester tester) async {
+    const double customHeight = 420.0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 3,
+            itemWidth: 200,
+            itemHeight: 300,
+            height: customHeight,
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    // Verify the container SizedBox has the custom height
+    final containerFinder = find.byKey(const Key('coverflow-container'));
+    expect(containerFinder, findsOneWidget);
+
+    final double height = tester.getSize(containerFinder).height;
+    expect(height, customHeight);
+  });
 }
 
