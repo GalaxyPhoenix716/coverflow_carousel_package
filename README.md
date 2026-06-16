@@ -10,29 +10,30 @@ Perfect for music apps, movie browsers, ecommerce showcases, galleries, portfoli
 
 ## Features
 
-- Smooth 3D coverflow-style design
-- Responsive across different screen sizes
-- Swipe-based navigation
-- **Infinite scroll support** (seamless looping and circular swiping)
-- **Dynamic entry animations** (fades, zoom scales, horizontal fanning, sliding, and sequential stacking)
-- **Center card overlay builder** (dynamic overlays with automatic distance-linked fade transitions)
-- **3D hover/tilt effects** (interactive pointer-tracking card tilt in 3D)
-- **Mouse scroll wheel and trackpad navigation** (throttled desktop/web scroll interaction)
-- Custom viewport fraction (dynamic page scroll width adjustments)
-- Click-to-focus on off-center cards
-- Multi-gesture compatibility (internal card interactions work seamlessly on active cards)
-- Web and desktop drag compatibility (mouse and trackpad swipe support)
-- Suppressed native scrollbars on desktop/web
-- Builder-based API for optimal rendering performance
-- Fully customizable card dimensions
-- Adjustable overlap and spacing
-- Smooth animations and transitions
-- Optional blur effects for side cards
-- Configurable visible card count
-- Adjustable perspective and rotation
-- External controller support
-- Optimized rendering for large datasets
-- Reusable and production-ready
+### Visuals & 3D Perspective
+* **Smooth 3D Coverflow Design**: Immersive carousel layout with customizable 3D perspective, skew angles, and depth scaling.
+* **Vertical & Horizontal Layouts**: Full native support for both horizontal and vertical scrolling directions with properly oriented 3D transformations.
+* **Dynamic Entry Animations**: Staggered fades, zoom scales, spacing expansions (horizontal fanning), sliding, and physical stacking effects.
+* **Depth & Shadows**: Real-time drop shadow calculations with customizable elevation and border clipping, plus optional blurring for off-center cards.
+
+### Interactions & Input
+* **3D Hover & Tilt Effects**: Interactive pointer-tracking that tilts cards in 3D space with customizable angles and smooth deceleration.
+* **Mouse Wheel & Trackpad Navigation**: Seamless, throttled scroll wheel interaction for web and desktop platforms.
+* **Multi-Gesture Compatibility**: Allows buttons, sliders, and gestures on active cards to respond naturally without interference.
+* **Click-to-Focus**: Auto-navigates and centers off-center cards when clicked or tapped.
+* **Infinite Looping**: Support for infinite scroll with seamless boundary transitions.
+
+### Customization & Builders
+* **Center Card Overlays**: Stack play buttons, badges, or details directly on the centered card with distance-linked fade transitions.
+* **Fully Adjustable Spacing**: Set custom overlap parameters, near card spacing, far card spacing, viewport fractions, and visible card counts.
+* **Custom Dimensions**: Support for explicit card width and height constraints.
+
+### Performance & Controller
+* **Builder-Based API**: On-demand widget creation optimizes rendering performance for large or infinite datasets.
+* **Synchronous & Stream Controllers**: Programmatic navigation (`next`, `previous`, `animateTo`) paired with real-time stream/notifier scroll position updates.
+* **Suppressed Desktop Scrollbars**: Automatic scrollbar suppression for clean web/desktop presentation.
+* **Production Ready**: Optimized performance, fully tested, and zero external widget dependencies.
+
 
 ## Preview
 
