@@ -1,3 +1,7 @@
+## 2.0.1
+
+1. Beautified readme
+
 ## 2.0.0
 
 1. **Vertical Scroll Direction**: Added full support for vertical scrolling layouts (`Axis.vertical`) with vertical-only 3D skew rotation along the X-axis and dynamic vertical spacing controls.

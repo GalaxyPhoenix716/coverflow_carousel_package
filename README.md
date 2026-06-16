@@ -33,6 +33,8 @@
 
 ## Preview
 
+> This is a demo of an application of this package. You can download the example app from the github repo to test all the features.
+
 ![Coverflow Carousel Demo 1](assets/coverflow_carousel_demo.gif)
 ![Coverflow Carousel Demo 2](assets/coverflow_carousel_demo_2.gif)
 
@@ -44,7 +46,7 @@ Add the package to your `pubspec.yaml`.
 
 ```yaml
 dependencies:
-  coverflow_carousel: ^2.0.0
+  coverflow_carousel: ^2.0.1
 ```
 
 OR
