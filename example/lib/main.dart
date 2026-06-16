@@ -145,6 +145,8 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                         itemCount: _demoCards.length,
                         itemWidth: 260,
                         itemHeight: 280,
+                        nearCardSpacing: 30,
+                        farCardSpacing: 48,
                         height: _useCustomHeight ? _carouselHeight : null,
                         mode: _mode,
                         isInfinite: _isInfinite,
@@ -233,11 +235,13 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                                       fit: BoxFit.scaleDown,
                                       alignment: Alignment.bottomLeft,
                                       child: SizedBox(
-                                        width: 220, // itemWidth 260 minus horizontal padding 40
+                                        width:
+                                            220, // itemWidth 260 minus horizontal padding 40
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
                                           children: [
                                             Container(
                                               padding: const EdgeInsets.all(8),

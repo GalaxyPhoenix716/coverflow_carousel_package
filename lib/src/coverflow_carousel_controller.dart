@@ -16,8 +16,10 @@ class CoverflowCarouselController {
   final ValueNotifier<double> _pageNotifier = ValueNotifier<double>(0.0);
   final ValueNotifier<double> _rawPageNotifier = ValueNotifier<double>(0.0);
 
-  final StreamController<double> _pageStreamController = StreamController<double>.broadcast();
-  final StreamController<double> _rawPageStreamController = StreamController<double>.broadcast();
+  final StreamController<double> _pageStreamController =
+      StreamController<double>.broadcast();
+  final StreamController<double> _rawPageStreamController =
+      StreamController<double>.broadcast();
 
   /// A [ValueNotifier] that emits the current normalized fractional page index.
   ///
@@ -82,7 +84,10 @@ class CoverflowCarouselController {
   /// Updates the internal metrics of the controller.
   ///
   /// Called internally by the carousel state; do not call this method directly.
-  void updateMetrics({required double rawPage, required double normalizedPage}) {
+  void updateMetrics({
+    required double rawPage,
+    required double normalizedPage,
+  }) {
     if (_rawPageNotifier.value != rawPage) {
       _rawPageNotifier.value = rawPage;
       if (!_rawPageStreamController.isClosed) {
@@ -107,4 +112,3 @@ class CoverflowCarouselController {
     _rawPageNotifier.dispose();
   }
 }
-
