@@ -2,18 +2,19 @@
 
 [![pub package](https://img.shields.io/pub/v/coverflow_carousel.svg?label=pub.dev&color=blue&style=flat-square)](https://pub.dev/packages/coverflow_carousel)
 [![likes](https://img.shields.io/pub/likes/coverflow_carousel?style=flat-square)](https://pub.dev/packages/coverflow_carousel)
-[![popularity](https://img.shields.io/pub/popularity/coverflow_carousel?style=flat-square)](https://pub.dev/packages/coverflow_carousel)
+[![pub points](https://img.shields.io/pub/points/coverflow_carousel?style=flat-square)](https://pub.dev/packages/coverflow_carousel)
 [![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=flat-square&logo=Flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?style=flat-square&logo=Dart&logoColor=white)](https://dart.dev)
-[![license](https://img.shields.io/github/license/GalaxyPhoenix716/coverflow_carousel_package?style=flat-square&color=green)](https://github.com/GalaxyPhoenix716/coverflow_carousel_package/blob/main/LICENSE)
+[![license](https://img.shields.io/badge/license-BSD--3--Clause-blue?style=flat-square)](https://github.com/GalaxyPhoenix716/coverflow_carousel_package/blob/main/LICENSE)
 
-A beautiful, highly customizable 3D coverflow-style carousel for Flutter.
-
-Create immersive experiences with smooth perspective effects, overlapping cards, dynamic scaling, and effortless programmatic navigation.
-
-Perfect for music apps, movie browsers, ecommerce showcases, galleries, portfolios, and modern mobile interfaces.
+> A beautiful, highly customizable 3D coverflow-style carousel for Flutter.
+> 
+> Create immersive experiences with smooth perspective effects, overlapping cards, dynamic scaling, and effortless programmatic navigation.
+> 
+> Perfect for music apps, movie browsers, ecommerce showcases, galleries, portfolios, and modern mobile interfaces.
 
 ---
+
 
 
 ## Features
