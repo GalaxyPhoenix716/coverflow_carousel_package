@@ -346,6 +346,10 @@ class CoverflowCarouselRenderer extends StatelessWidget {
 
     if (centerOverlayBuilder != null && overlayOpacity > 0.0) {
       final overlayWidget = centerOverlayBuilder!(context, realIndex);
+      final double overlayTranslateY = scrollDirection == Axis.vertical
+          ? 30.0 * distance
+          : 0.0;
+
       if (overlayWidget is Positioned) {
         mainContent = Stack(
           fit: StackFit.expand,
@@ -363,7 +367,10 @@ class CoverflowCarouselRenderer extends StatelessWidget {
                 ignoring: !isCentered,
                 child: Opacity(
                   opacity: overlayOpacity,
-                  child: overlayWidget.child,
+                  child: Transform.translate(
+                    offset: Offset(0, overlayTranslateY),
+                    child: overlayWidget.child,
+                  ),
                 ),
               ),
             ),
@@ -386,7 +393,10 @@ class CoverflowCarouselRenderer extends StatelessWidget {
                 ignoring: !isCentered,
                 child: Opacity(
                   opacity: overlayOpacity,
-                  child: overlayWidget.child,
+                  child: Transform.translate(
+                    offset: Offset(0, overlayTranslateY),
+                    child: overlayWidget.child,
+                  ),
                 ),
               ),
             ),
@@ -401,7 +411,13 @@ class CoverflowCarouselRenderer extends StatelessWidget {
             Positioned.fill(
               child: IgnorePointer(
                 ignoring: !isCentered,
-                child: Opacity(opacity: overlayOpacity, child: overlayWidget),
+                child: Opacity(
+                  opacity: overlayOpacity,
+                  child: Transform.translate(
+                    offset: Offset(0, overlayTranslateY),
+                    child: overlayWidget,
+                  ),
+                ),
               ),
             ),
           ],
@@ -409,35 +425,46 @@ class CoverflowCarouselRenderer extends StatelessWidget {
       }
     }
 
-    final Widget cardWidget = Container(
-      width: width,
-      height: height,
-      padding: padding,
-      child: AbsorbPointer(
-        absorbing: !isCentered,
-        child: _CoverflowHoverTilt(
-          enabled: enableHoverTilt && isCentered,
-          maxTiltAngle: maxHoverTiltAngle,
-          perspective: perspective,
-          enableShadow: enableShadow,
-          shadowColor: shadowColor,
-          elevation: elevation,
-          borderRadius: cardBorderRadius,
-          child: mainContent,
+    final Widget cardWidget = Center(
+      child: Container(
+        width: width,
+        height: height,
+        padding: padding,
+        child: AbsorbPointer(
+          absorbing: !isCentered,
+          child: _CoverflowHoverTilt(
+            enabled: enableHoverTilt && isCentered,
+            maxTiltAngle: maxHoverTiltAngle,
+            perspective: perspective,
+            enableShadow: enableShadow,
+            shadowColor: shadowColor,
+            elevation: elevation,
+            borderRadius: cardBorderRadius,
+            child: mainContent,
+          ),
         ),
       ),
     );
 
     final double leftCoord = scrollDirection == Axis.horizontal
         ? position - width / 2
-        : (maxWidth - width) / 2;
+        : (maxWidth - itemWidth) / 2;
     final double topCoord = scrollDirection == Axis.vertical
         ? position - height / 2
-        : (maxHeight - height) / 2;
+        : (maxHeight - itemHeight) / 2;
+
+    final double posWidth = scrollDirection == Axis.horizontal
+        ? width
+        : itemWidth;
+    final double posHeight = scrollDirection == Axis.vertical
+        ? height
+        : itemHeight;
 
     return Positioned(
       left: leftCoord,
       top: topCoord,
+      width: posWidth,
+      height: posHeight,
       child: GestureDetector(
         onTap: !isCentered
             ? () {

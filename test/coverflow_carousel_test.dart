@@ -971,6 +971,40 @@ void main() {
     expect(cardPositioned.left, isNotNull);
     expect(cardPositioned.top, isNotNull);
   });
+
+  testWidgets('CoverflowCarouselRenderer applies vertical overlay translation',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 3,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            scrollDirection: Axis.vertical,
+            centerOverlayBuilder: (context, index) {
+              return Positioned(
+                key: const Key('overlay-widget'),
+                left: 10,
+                bottom: 10,
+                child: Text('Overlay $index'),
+              );
+            },
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    final overlayFinder = find.byKey(const Key('overlay-widget'));
+    expect(overlayFinder, findsOneWidget);
+
+    final transformFinder = find.ancestor(of: overlayFinder, matching: find.byType(Transform));
+    expect(transformFinder, findsOneWidget);
+  });
 }
 
 
