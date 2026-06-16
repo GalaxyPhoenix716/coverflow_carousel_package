@@ -33,6 +33,7 @@
 
 ## Preview
 
+> [!NOTE]
 > This is a demo of an application of this package. You can download the example app from the github repo to test all the features.
 
 ![Coverflow Carousel Demo 1](assets/coverflow_carousel_demo.gif)
