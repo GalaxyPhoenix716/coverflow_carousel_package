@@ -174,6 +174,17 @@ class CoverflowCarousel extends StatefulWidget {
   /// sufficient space for 3D card perspective tilt, shadow elevations, and active card overlays.
   final double? height;
 
+  /// The total width of the carousel widget container.
+  ///
+  /// If not specified, defaults to taking up all available horizontal space in horizontal mode,
+  /// or [itemWidth] + 80 logical pixels in vertical mode.
+  final double? width;
+
+  /// The axis along which the carousel scrolls.
+  ///
+  /// Defaults to [Axis.horizontal].
+  final Axis scrollDirection;
+
   /// Whether to enable auto-advancement of cards.
   ///
   /// Defaults to `false`.
@@ -238,6 +249,8 @@ class CoverflowCarousel extends StatefulWidget {
     this.maxHoverTiltAngle = 0.15,
     this.enableScrollWheel = true,
     this.height,
+    this.width,
+    this.scrollDirection = Axis.horizontal,
     this.autoplay = false,
     this.autoplayInterval = const Duration(seconds: 3),
     this.autoplayPauseOnHover = true,
@@ -248,6 +261,10 @@ class CoverflowCarousel extends StatefulWidget {
   }) : assert(
          height == null || height >= itemHeight,
          'height must be greater than or equal to itemHeight to prevent layout clipping.',
+       ),
+       assert(
+         width == null || width >= itemWidth,
+         'width must be greater than or equal to itemWidth to prevent layout clipping.',
        );
 
   @override
@@ -364,7 +381,10 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
             normalized += realCount;
           }
         }
-        widget.controller!.updateMetrics(rawPage: page, normalizedPage: normalized);
+        widget.controller!.updateMetrics(
+          rawPage: page,
+          normalizedPage: normalized,
+        );
       }
 
       final rounded = page.round();
@@ -388,9 +408,14 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
 
   void _handlePointerSignal(PointerSignalEvent event) {
     if (event is PointerScrollEvent) {
-      final double delta = event.scrollDelta.dy != 0
-          ? event.scrollDelta.dy
-          : event.scrollDelta.dx;
+      final double delta;
+      if (widget.scrollDirection == Axis.vertical) {
+        delta = event.scrollDelta.dy;
+      } else {
+        delta = event.scrollDelta.dy != 0
+            ? event.scrollDelta.dy
+            : event.scrollDelta.dx;
+      }
       if (delta.abs() < 1) return;
 
       if (!_controller.hasClients) return;
@@ -440,7 +465,8 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
         (widget.mode == CoverflowMode.classic ? 0.88 : 0.25);
 
     if (oldResolvedViewportFraction != resolvedViewportFraction ||
-        oldWidget.isInfinite != widget.isInfinite) {
+        oldWidget.isInfinite != widget.isInfinite ||
+        oldWidget.scrollDirection != widget.scrollDirection) {
       final double currentRawPage = _controller.positions.isNotEmpty
           ? _controller.page ?? widget.initialPage.toDouble()
           : widget.initialPage.toDouble();
@@ -488,7 +514,9 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
 
   void _updateControllerMetrics() {
     if (widget.controller == null) return;
-    final page = _controller.hasClients ? (_controller.page ?? _initialVirtualPage.toDouble()) : _initialVirtualPage.toDouble();
+    final page = _controller.hasClients
+        ? (_controller.page ?? _initialVirtualPage.toDouble())
+        : _initialVirtualPage.toDouble();
     final realCount = widget.itemCount;
     double normalized = page;
     if (widget.isInfinite && realCount > 0) {
@@ -564,14 +592,30 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
         (widget.mode == CoverflowMode.classic ? 0.0 : -0.35);
     final resolvedNearCardSpacing =
         widget.nearCardSpacing ??
-        (widget.mode == CoverflowMode.classic ? widget.itemWidth : 45.0);
+        (widget.mode == CoverflowMode.classic
+            ? (widget.scrollDirection == Axis.horizontal
+                  ? widget.itemWidth
+                  : widget.itemHeight)
+            : 45.0);
     final resolvedFarCardSpacing =
         widget.farCardSpacing ??
-        (widget.mode == CoverflowMode.classic ? widget.itemWidth : 50.0);
+        (widget.mode == CoverflowMode.classic
+            ? (widget.scrollDirection == Axis.horizontal
+                  ? widget.itemWidth
+                  : widget.itemHeight)
+            : 50.0);
+
+    final double? containerWidth = widget.scrollDirection == Axis.horizontal
+        ? widget.width
+        : (widget.width ?? widget.itemWidth + 80);
+    final double? containerHeight = widget.scrollDirection == Axis.vertical
+        ? widget.height
+        : (widget.height ?? widget.itemHeight + 80);
 
     final Widget carouselContent = SizedBox(
       key: const Key('coverflow-container'),
-      height: widget.height ?? widget.itemHeight + 80,
+      width: containerWidth,
+      height: containerHeight,
       child: Stack(
         children: [
           NotificationListener<ScrollNotification>(
@@ -586,6 +630,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
               return false;
             },
             child: PageView.builder(
+              scrollDirection: widget.scrollDirection,
               controller: _controller,
               itemCount: widget.isInfinite ? null : widget.itemCount,
               scrollBehavior: const _CoverflowScrollBehavior(),
@@ -603,6 +648,8 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
                     controller: _controller,
                     centerIndex: currentPage,
                     maxWidth: constraints.maxWidth,
+                    maxHeight: constraints.maxHeight,
+                    scrollDirection: widget.scrollDirection,
                     itemWidth: widget.itemWidth,
                     itemHeight: widget.itemHeight,
                     itemCount: widget.itemCount,
@@ -641,6 +688,8 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
                         controller: _controller,
                         centerIndex: currentPage,
                         maxWidth: constraints.maxWidth,
+                        maxHeight: constraints.maxHeight,
+                        scrollDirection: widget.scrollDirection,
                         itemWidth: widget.itemWidth,
                         itemHeight: widget.itemHeight,
                         itemCount: widget.itemCount,

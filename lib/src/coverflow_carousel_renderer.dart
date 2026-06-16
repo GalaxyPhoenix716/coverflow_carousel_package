@@ -23,6 +23,12 @@ class CoverflowCarouselRenderer extends StatelessWidget {
   /// The maximum available width from the parent layout constraints.
   final double maxWidth;
 
+  /// The maximum available height from the parent layout constraints.
+  final double maxHeight;
+
+  /// The axis along which the carousel scrolls.
+  final Axis scrollDirection;
+
   /// The width of the focused center card.
   final double itemWidth;
 
@@ -35,13 +41,13 @@ class CoverflowCarouselRenderer extends StatelessWidget {
   /// Intensity of the blur effect applied to off-center cards.
   final double obscure;
 
-  /// The rotation angle (in radians) applied to off-center cards along the Y-axis.
+  /// The rotation angle (in radians) applied to off-center cards along the Y-axis (or X-axis if vertical).
   final double skewAngle;
 
-  /// Horizontal spacing between the center card and the immediately adjacent cards.
+  /// Horizontal (or vertical if vertical direction) spacing between the center card and the immediately adjacent cards.
   final double nearCardSpacing;
 
-  /// Horizontal spacing between adjacent background cards.
+  /// Horizontal (or vertical if vertical direction) spacing between adjacent background cards.
   final double farCardSpacing;
 
   /// Perspective factor for 3D projection, modifying the matrix entry `(3, 2)`.
@@ -96,6 +102,8 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     required this.itemBuilder,
     required this.centerIndex,
     required this.maxWidth,
+    required this.maxHeight,
+    required this.scrollDirection,
     required this.itemWidth,
     required this.itemHeight,
     required this.obscure,
@@ -120,13 +128,14 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     this.centerOverlayBuilder,
   });
 
-  /// Calculates the horizontal center position (logical pixels) for a card at [index].
+  /// Calculates the center position (logical pixels) for a card at [index] along the scroll axis.
   ///
-  /// The center card sits exactly at the middle of the available viewport width.
+  /// The center card sits exactly at the middle of the available viewport dimension.
   /// Adjacent cards are distributed outwards using [nearCardSpacing] for the first step,
   /// and [farCardSpacing] for subsequent steps, modified by the entry animation progress if active.
   double getCardPosition(int index) {
-    final center = maxWidth / 2;
+    final center =
+        (scrollDirection == Axis.horizontal ? maxWidth : maxHeight) / 2;
     final distance = index - centerIndex;
 
     final spacingFactor =
@@ -147,36 +156,77 @@ class CoverflowCarouselRenderer extends StatelessWidget {
 
   /// Calculates the scaled width of a card at [index].
   ///
-  /// Cards shrink as they move away from the active center card.
-  /// The focused card has [itemWidth]. Immediately adjacent cards (distance = 1) shrink to 88%.
-  /// Further adjacent cards (distance >= 2) shrink to 72%. Transitions between these distances are linear.
+  /// In horizontal mode, width scales down to 88% then 72%.
+  /// In vertical mode, width scales down slightly (clamp to 75%).
   double getCardWidth(int index) {
     final distance = (centerIndex - index).abs();
-    final centerWidth = itemWidth;
-    final nearWidth = itemWidth * 0.88;
-    final farWidth = itemWidth * 0.72;
+    if (scrollDirection == Axis.horizontal) {
+      final centerWidth = itemWidth;
+      final nearWidth = itemWidth * 0.88;
+      final farWidth = itemWidth * 0.72;
 
-    if (distance < 1) {
-      return centerWidth -
-          (centerWidth - nearWidth) * (distance - distance.floor());
+      if (distance < 1) {
+        return centerWidth -
+            (centerWidth - nearWidth) * (distance - distance.floor());
+      }
+
+      if (distance < 2) {
+        return nearWidth -
+            (nearWidth - farWidth) * (distance - distance.floor());
+      }
+
+      return farWidth;
+    } else {
+      return (itemWidth * (1 - distance * 0.08)).clamp(
+        itemWidth * 0.75,
+        itemWidth,
+      );
     }
+  }
 
-    if (distance < 2) {
-      return nearWidth - (nearWidth - farWidth) * (distance - distance.floor());
+  /// Calculates the scaled height of a card at [index].
+  ///
+  /// In vertical mode, height scales down to 88% then 72%.
+  /// In horizontal mode, height scales down slightly (clamp to 75%).
+  double getCardHeight(int index) {
+    final distance = (centerIndex - index).abs();
+    if (scrollDirection == Axis.vertical) {
+      final centerHeight = itemHeight;
+      final nearHeight = itemHeight * 0.88;
+      final farHeight = itemHeight * 0.72;
+
+      if (distance < 1) {
+        return centerHeight -
+            (centerHeight - nearHeight) * (distance - distance.floor());
+      }
+
+      if (distance < 2) {
+        return nearHeight -
+            (nearHeight - farHeight) * (distance - distance.floor());
+      }
+
+      return farHeight;
+    } else {
+      return (itemHeight * (1 - distance * 0.08)).clamp(
+        itemHeight * 0.75,
+        itemHeight,
+      );
     }
-
-    return farWidth;
   }
 
   /// Computes the 3D perspective matrix for a card at [index].
   ///
   /// Applies a perspective entry `(3, 2) = perspective` and rotates the card along the
-  /// Y-axis by `skewAngle * distance` (where `distance` is the layout difference `centerIndex - index`).
+  /// Y-axis by `skewAngle * distance` in horizontal mode, or the X-axis in vertical mode.
   Matrix4 getTransform(int index) {
     final distance = centerIndex - index;
-    final transform = Matrix4.identity()
-      ..setEntry(3, 2, perspective)
-      ..rotateY(skewAngle * distance);
+    final transform = Matrix4.identity()..setEntry(3, 2, perspective);
+
+    if (scrollDirection == Axis.horizontal) {
+      transform.rotateY(skewAngle * distance);
+    } else {
+      transform.rotateX(-skewAngle * distance);
+    }
 
     return transform;
   }
@@ -198,12 +248,15 @@ class CoverflowCarouselRenderer extends StatelessWidget {
   Widget buildCard(BuildContext context, int index, Widget child) {
     final distance = (centerIndex - index).abs();
     final width = getCardWidth(index);
-    final height = (itemHeight * (1 - distance * 0.08)).clamp(
-      itemHeight * 0.75,
-      itemHeight,
-    );
+    final height = getCardHeight(index);
     final position = getCardPosition(index);
-    final verticalPadding = width * 0.05 * distance;
+
+    final double paddingValue =
+        (scrollDirection == Axis.horizontal ? width : height) * 0.05 * distance;
+    final padding = scrollDirection == Axis.horizontal
+        ? EdgeInsets.symmetric(vertical: paddingValue)
+        : EdgeInsets.symmetric(horizontal: paddingValue);
+
     final bool isCentered = index == centerIndex.round();
 
     final double cardProgress;
@@ -259,9 +312,17 @@ class CoverflowCarouselRenderer extends StatelessWidget {
         if (index == initialPage) {
           translateY = -50.0 * (1.0 - cardProgress);
         } else if (index < initialPage) {
-          translateX = -150.0 * (1.0 - cardProgress);
+          if (scrollDirection == Axis.horizontal) {
+            translateX = -150.0 * (1.0 - cardProgress);
+          } else {
+            translateY = -150.0 * (1.0 - cardProgress);
+          }
         } else {
-          translateX = 150.0 * (1.0 - cardProgress);
+          if (scrollDirection == Axis.horizontal) {
+            translateX = 150.0 * (1.0 - cardProgress);
+          } else {
+            translateY = 150.0 * (1.0 - cardProgress);
+          }
         }
       }
       if (entryAnimation == CoverflowEntryAnimation.stack) {
@@ -351,7 +412,7 @@ class CoverflowCarouselRenderer extends StatelessWidget {
     final Widget cardWidget = Container(
       width: width,
       height: height,
-      padding: EdgeInsets.symmetric(vertical: verticalPadding),
+      padding: padding,
       child: AbsorbPointer(
         absorbing: !isCentered,
         child: _CoverflowHoverTilt(
@@ -367,8 +428,16 @@ class CoverflowCarouselRenderer extends StatelessWidget {
       ),
     );
 
+    final double leftCoord = scrollDirection == Axis.horizontal
+        ? position - width / 2
+        : (maxWidth - width) / 2;
+    final double topCoord = scrollDirection == Axis.vertical
+        ? position - height / 2
+        : (maxHeight - height) / 2;
+
     return Positioned(
-      left: position - width / 2,
+      left: leftCoord,
+      top: topCoord,
       child: GestureDetector(
         onTap: !isCentered
             ? () {

@@ -53,6 +53,10 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
   double _shadowElevation = 8.0;
   double _cardCornerRadiusValue = 24.0;
 
+  Axis _scrollDirection = Axis.horizontal;
+  bool _useCustomWidth = false;
+  double _carouselWidth = 340.0;
+
   // Active configuration categories for the control panel tabs
   int _configTab = 0; // 0: Layout, 1: Motion & Interactivity, 2: VFX & Shadows
 
@@ -137,6 +141,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                 children: [
                   // 1. The Coverflow Carousel Container
                   SizedBox(
+                    width: _useCustomWidth ? _carouselWidth : null,
                     height: _useCustomHeight ? _carouselHeight : 380,
                     child: Center(
                       child: CoverflowCarousel.builder(
@@ -145,9 +150,11 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                         itemCount: _demoCards.length,
                         itemWidth: 260,
                         itemHeight: 280,
+                        width: _useCustomWidth ? _carouselWidth : null,
+                        height: _useCustomHeight ? _carouselHeight : null,
+                        scrollDirection: _scrollDirection,
                         nearCardSpacing: 30,
                         farCardSpacing: 48,
-                        height: _useCustomHeight ? _carouselHeight : null,
                         mode: _mode,
                         isInfinite: _isInfinite,
                         obscure: _obscure,
@@ -408,6 +415,35 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                                         ? '3D Coverflow'
                                         : 'Classic Slider',
                                   ),
+                                  _GlassDropdown<Axis>(
+                                    title: 'Scroll Direction',
+                                    value: _scrollDirection,
+                                    items: Axis.values,
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setState(() => _scrollDirection = val);
+                                      }
+                                    },
+                                    labelBuilder: (a) => a == Axis.horizontal
+                                        ? 'Horizontal'
+                                        : 'Vertical',
+                                  ),
+                                  _GlassSwitch(
+                                    title: 'Custom Width Constraints',
+                                    value: _useCustomWidth,
+                                    onChanged: (val) =>
+                                        setState(() => _useCustomWidth = val),
+                                  ),
+                                  if (_useCustomWidth)
+                                    _GlassSlider(
+                                      title: 'Carousel Width',
+                                      value: _carouselWidth,
+                                      min: 280.0,
+                                      max: 450.0,
+                                      onChanged: (val) =>
+                                          setState(() => _carouselWidth = val),
+                                      suffix: 'px',
+                                    ),
                                   _GlassSlider(
                                     title:
                                         'Viewport Fraction (Card Scale / Swipe Area)',
@@ -939,7 +975,7 @@ class _GlassSwitch extends StatelessWidget {
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         ),
         value: value,
-        activeColor: Colors.pinkAccent,
+        activeThumbColor: Colors.pinkAccent,
         inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
         onChanged: onChanged,
       ),

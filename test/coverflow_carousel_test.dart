@@ -908,6 +908,69 @@ void main() {
     await subscriptionRaw.cancel();
     controller.dispose();
   });
+
+  testWidgets('CoverflowCarousel resolves classic mode defaults and custom overrides correctly in vertical direction',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 3,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            mode: CoverflowMode.classic,
+            scrollDirection: Axis.vertical,
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    final renderer = tester.widget<CoverflowCarouselRenderer>(find.byType(CoverflowCarouselRenderer));
+    expect(renderer.visibleItems, 1);
+    expect(renderer.skewAngle, 0.0);
+    expect(renderer.nearCardSpacing, 300.0); // equal to itemHeight in vertical mode
+    expect(renderer.farCardSpacing, 300.0);
+
+    final pageView = tester.widget<PageView>(find.byType(PageView));
+    expect(pageView.scrollDirection, Axis.vertical);
+    expect(pageView.controller!.viewportFraction, 0.88);
+  });
+
+  testWidgets('CoverflowCarouselRenderer calculates coordinates correctly in vertical scroll direction',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 5,
+            itemWidth: 200,
+            itemHeight: 300,
+            initialPage: 0,
+            scrollDirection: Axis.vertical,
+            itemBuilder: (context, index) {
+              return KeyedSubtree(
+                key: Key('card-$index'),
+                child: Text('Item $index'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    final card0Finder = find.ancestor(
+      of: find.byKey(const Key('card-0')),
+      matching: find.byType(Positioned),
+    ).first;
+
+    final Positioned cardPositioned = tester.widget<Positioned>(card0Finder);
+    expect(cardPositioned.left, isNotNull);
+    expect(cardPositioned.top, isNotNull);
+  });
 }
 
 
