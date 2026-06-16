@@ -47,7 +47,7 @@ Add the package to your `pubspec.yaml`.
 
 ```yaml
 dependencies:
-  coverflow_carousel: ^1.2.1
+  coverflow_carousel: ^2.0.0
 ```
 
 OR
@@ -137,7 +137,7 @@ controller.rawPageStream.listen((double rawPage) {
 ```
 
 Make sure to call `controller.dispose()` when the controller is no longer needed to clean up stream subscriptions.
-```
+
 
 ## Entry Animations
 
