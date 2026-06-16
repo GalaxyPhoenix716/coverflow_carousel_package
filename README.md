@@ -71,6 +71,7 @@ CoverflowCarousel.builder(
     itemCount: 10,
     itemWidth: 250,
     itemHeight: 320,
+    scrollDirection: Axis.horizontal,
     itemBuilder: (context, index) {
         return Container(
             decoration: BoxDecoration(
@@ -96,20 +97,46 @@ CoverflowCarousel.builder(
   itemCount: items.length,
   itemWidth: 250,
   itemHeight: 320,
+  scrollDirection: Axis.horizontal,
   itemBuilder: (context, index) {
     return MyCard(index: index);
   },
 )
 ```
 
-Navigate Programatically
+#### Programmatic Navigation
 
 ```dart
 controller.next();
-
 controller.previous();
-
 controller.animateTo(5);
+```
+
+#### Listen to Scroll Progress
+
+You can listen to real-time scroll updates (for custom page indicators, ambient colors, animations, etc.) using streams or value notifiers:
+
+```dart
+// Notifiers (synchronous value updates)
+controller.pageListenable.addListener(() {
+  double currentPage = controller.page; // Normalized index in [0, itemCount)
+});
+
+controller.rawPageListenable.addListener(() {
+  double rawPage = controller.rawPage; // Raw PageController values
+});
+
+// Broadcast Streams
+controller.pageStream.listen((double normalizedPage) {
+  // Triggers on every fractional scroll update
+});
+
+controller.rawPageStream.listen((double rawPage) {
+  // Triggers on every raw scroll update
+});
+```
+
+Make sure to call `controller.dispose()` when the controller is no longer needed to clean up stream subscriptions.
 ```
 
 ## Entry Animations
@@ -121,6 +148,7 @@ CoverflowCarousel.builder(
   itemCount: items.length,
   itemWidth: 250,
   itemHeight: 320,
+  scrollDirection: Axis.horizontal,
   entryAnimation: CoverflowEntryAnimation.stack, // Physical stacking effect fanning center-out!
   entryAnimationDuration: const Duration(milliseconds: 1000),
   entryAnimationCurve: Curves.easeOutCubic,
@@ -151,6 +179,7 @@ CoverflowCarousel.builder(
   itemCount: items.length,
   itemWidth: 250,
   itemHeight: 320,
+  scrollDirection: Axis.horizontal,
   centerOverlayBuilder: (context, index) {
     return Positioned(
       bottom: 20,
@@ -187,11 +216,12 @@ Support scroll wheel and trackpad swipe movements to change pages. Navigation re
 | itemBuilder            | IndexedWidgetBuilder         | Builds each carousel item                                           |
 | itemWidth              | double                       | Width of the focused card                                           |
 | itemHeight             | double                       | Height of the focused card                                          |
+| scrollDirection        | Axis                         | Scroll direction (compulsory: `Axis.horizontal` or `Axis.vertical`) |
 | visibleItems           | int                          | Number of visible cards on each side of focused item (default: `3`) |
 | initialPage            | int                          | Initial focused page index (default: `0`)                           |
 | nearCardSpacing        | double                       | Spacing for adjacent cards (default: `45`)                          |
 | farCardSpacing         | double                       | Spacing for distant cards (default: `50`)                           |
-| skewAngle              | double                       | Card rotation angle (default: `-0.35`)                              |
+| skewAngle              | double                       | Card rotation angle (default: `-0.35` for coverflow, `0.0` for classic)|
 | perspective            | double                       | 3D perspective intensity (default: `0.0025`)                        |
 | obscure                | double                       | Blur intensity for side cards (default: `0`)                        |
 | controller             | CoverflowCarouselController? | External carousel controller                                        |
@@ -205,6 +235,15 @@ Support scroll wheel and trackpad swipe movements to change pages. Navigation re
 | centerOverlayBuilder   | Widget Function(BuildContext, int)? | Builder for overlays stacked on the active centered card (default: `null`) |
 | enableHoverTilt        | bool                         | Enable 3D hover/tilt effects on the active centered card (default: `true`) |
 | maxHoverTiltAngle      | double                       | Maximum tilt angle in radians applied during mouse hover (default: `0.15`) |
+| height                 | double?                      | Custom height constraint of the carousel container                  |
+| width                  | double?                      | Custom width constraint of the carousel container                   |
+| autoplay               | bool                         | Enable auto-advancing of cards (default: `false`)                   |
+| autoplayInterval       | Duration                     | Delay between autoplay advances (default: `3s`)                    |
+| autoplayPauseOnHover   | bool                         | Pause autoplay when hovered by mouse (default: `true`)              |
+| enableShadow           | bool                         | Enable drop shadows on cards (default: `true`)                      |
+| elevation              | double                       | Shadow elevation depth (default: `8.0`)                             |
+| shadowColor            | Color                        | Color of the drop shadows (default: `Colors.black`)                 |
+| cardBorderRadius       | BorderRadius                 | Border radius of the cards to clip shadow paths (default: `24.0`)    |
 
 ---
 
@@ -268,11 +307,5 @@ Before submitting a pull request:
 ### Support
 
 For questions, issues, or suggestions, please use the project's GitHub Issues page.
-
-### Future Development
-
-Planned improvements include:
-
-- Customizable layout coordinates for vertical coverflow carousels
 
 Thank you for using Coverflow Carousel!

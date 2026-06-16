@@ -1,3 +1,11 @@
+## 2.0.0
+
+1. **Vertical Scroll Direction**: Added full support for vertical scrolling layouts (`Axis.vertical`) with vertical-only 3D skew rotation along the X-axis and dynamic vertical spacing controls.
+2. **Synchronized Overlay Translation**: Overlays now translate smoothly vertically from down to up (`30.0 * distance`) as they fade in, with automated alignment adjustments to eliminate cross-axis diagonal drift during card scaling transitions.
+3. **Compulsory scrollDirection Parameter**: Marked the `scrollDirection` constructor parameter as `required` in `CoverflowCarousel.builder` to improve layout explicitness (breaking API change).
+4. **Scroll Progress Streams & Notifiers**: Exposed broadcast streams (`pageStream` and `rawPageStream`) and value notifiers (`pageListenable` and `rawPageListenable`) on `CoverflowCarouselController` to listen to fractional and raw scroll progress.
+5. **Robust Test Suite**: Refactored the widget test suite to prevent event loop hangs using synchronous notifiers, and verified vertical layout coordinates, overlay translation, and key preservation.
+
 ## 1.0.0
 
 1. Smooth 3D coverflow-style carousel

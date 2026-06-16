@@ -350,17 +350,33 @@ class CoverflowCarouselRenderer extends StatelessWidget {
           ? 30.0 * distance
           : 0.0;
 
+      // Calculate the size difference (shrinkage) of the stack content area relative
+      // to the standard itemWidth and itemHeight to keep the positioned coordinates fixed
+      // relative to the card's center.
+      final double horizontalPadding = scrollDirection == Axis.vertical ? 2 * paddingValue : 0.0;
+      final double verticalPadding = scrollDirection == Axis.horizontal ? 2 * paddingValue : 0.0;
+      final double stackWidth = width - horizontalPadding;
+      final double stackHeight = height - verticalPadding;
+      final double dx = itemWidth - stackWidth;
+      final double dy = itemHeight - stackHeight;
+
       if (overlayWidget is Positioned) {
+        final double? left = overlayWidget.left != null ? overlayWidget.left! - dx / 2 : null;
+        final double? right = overlayWidget.right != null ? overlayWidget.right! - dx / 2 : null;
+        final double? top = overlayWidget.top != null ? overlayWidget.top! - dy / 2 : null;
+        final double? bottom = overlayWidget.bottom != null ? overlayWidget.bottom! - dy / 2 : null;
+
         mainContent = Stack(
           fit: StackFit.expand,
           clipBehavior: Clip.none,
           children: [
             mainContent,
             Positioned(
-              left: overlayWidget.left,
-              top: overlayWidget.top,
-              right: overlayWidget.right,
-              bottom: overlayWidget.bottom,
+              key: overlayWidget.key,
+              left: left,
+              top: top,
+              right: right,
+              bottom: bottom,
               width: overlayWidget.width,
               height: overlayWidget.height,
               child: IgnorePointer(
@@ -377,16 +393,22 @@ class CoverflowCarouselRenderer extends StatelessWidget {
           ],
         );
       } else if (overlayWidget is PositionedDirectional) {
+        final double? start = overlayWidget.start != null ? overlayWidget.start! - dx / 2 : null;
+        final double? end = overlayWidget.end != null ? overlayWidget.end! - dx / 2 : null;
+        final double? top = overlayWidget.top != null ? overlayWidget.top! - dy / 2 : null;
+        final double? bottom = overlayWidget.bottom != null ? overlayWidget.bottom! - dy / 2 : null;
+
         mainContent = Stack(
           fit: StackFit.expand,
           clipBehavior: Clip.none,
           children: [
             mainContent,
             PositionedDirectional(
-              start: overlayWidget.start,
-              top: overlayWidget.top,
-              end: overlayWidget.end,
-              bottom: overlayWidget.bottom,
+              key: overlayWidget.key,
+              start: start,
+              top: top,
+              end: end,
+              bottom: bottom,
               width: overlayWidget.width,
               height: overlayWidget.height,
               child: IgnorePointer(

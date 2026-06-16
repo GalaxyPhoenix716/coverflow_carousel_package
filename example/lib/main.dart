@@ -153,8 +153,6 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                         width: _useCustomWidth ? _carouselWidth : null,
                         height: _useCustomHeight ? _carouselHeight : null,
                         scrollDirection: _scrollDirection,
-                        nearCardSpacing: 30,
-                        farCardSpacing: 48,
                         mode: _mode,
                         isInfinite: _isInfinite,
                         obscure: _obscure,

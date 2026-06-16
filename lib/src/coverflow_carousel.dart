@@ -250,7 +250,7 @@ class CoverflowCarousel extends StatefulWidget {
     this.enableScrollWheel = true,
     this.height,
     this.width,
-    this.scrollDirection = Axis.horizontal,
+    required this.scrollDirection,
     this.autoplay = false,
     this.autoplayInterval = const Duration(seconds: 3),
     this.autoplayPauseOnHover = true,
@@ -283,6 +283,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
   Timer? _autoplayTimer;
   bool _isHovering = false;
   bool _isUserDragging = false;
+  bool _disposed = false;
 
   void _resumeAutoplay() {
     if (!widget.autoplay) return;
@@ -364,6 +365,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
   }
 
   void _pageListener() {
+    if (_disposed || !mounted) return;
     final page = _controller.page ?? 0.0;
 
     void update() {
@@ -576,6 +578,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
 
   @override
   void dispose() {
+    _disposed = true;
     _autoplayTimer?.cancel();
     widget.controller?.detach();
     _controller.dispose();

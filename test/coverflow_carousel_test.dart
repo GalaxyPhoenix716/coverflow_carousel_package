@@ -14,6 +14,7 @@ void main() {
             itemCount: 5,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             itemBuilder: (context, index) {
               return Text('Item $index');
             },
@@ -40,6 +41,7 @@ void main() {
             itemCount: 5,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             viewportFraction: customViewportFraction,
             itemBuilder: (context, index) {
               return Text('Item $index');
@@ -64,6 +66,7 @@ void main() {
             itemCount: 5,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             nearCardSpacing: 250,
             farCardSpacing: 250,
             initialPage: 0,
@@ -100,6 +103,7 @@ void main() {
             itemCount: 3,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 0,
             itemBuilder: (context, index) {
               if (index == 0) {
@@ -138,6 +142,7 @@ void main() {
             itemCount: 5,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 0,
             onPageChanged: (index) {
               pageChangedIndex = index;
@@ -183,6 +188,7 @@ void main() {
             itemCount: 5,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             nearCardSpacing: 250,
             farCardSpacing: 250,
             initialPage: 0,
@@ -232,6 +238,7 @@ void main() {
             itemCount: 5,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             isInfinite: true,
             initialPage: 0,
             onPageChanged: (index) {
@@ -276,6 +283,7 @@ void main() {
             itemCount: 5,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             isInfinite: true,
             initialPage: 0,
             onPageChanged: (index) {
@@ -318,6 +326,7 @@ void main() {
             itemCount: list.length,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             isInfinite: true,
             initialPage: 0,
             itemBuilder: (context, index) {
@@ -345,6 +354,7 @@ void main() {
               itemCount: 5,
               itemWidth: 200,
               itemHeight: 300,
+              scrollDirection: Axis.horizontal,
               entryAnimation: animation,
               entryAnimationDuration: const Duration(milliseconds: 100),
               itemBuilder: (context, index) {
@@ -374,6 +384,7 @@ void main() {
             itemCount: 3,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 0,
             centerOverlayBuilder: (context, index) {
               return ElevatedButton(
@@ -411,6 +422,7 @@ void main() {
             itemCount: 3,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 0,
             centerOverlayBuilder: (context, index) {
               return Positioned(
@@ -453,6 +465,7 @@ void main() {
             itemCount: 5,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 0,
             onPageChanged: (index) {
               pageChangedIndex = index;
@@ -503,6 +516,7 @@ void main() {
             itemCount: 3,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 0,
             enableHoverTilt: true,
             maxHoverTiltAngle: 0.2,
@@ -541,6 +555,7 @@ void main() {
             itemCount: 5,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 0,
             enableScrollWheel: false,
             onPageChanged: (index) {
@@ -581,6 +596,7 @@ void main() {
             itemCount: 3,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             height: customHeight,
             itemBuilder: (context, index) {
               return Text('Item $index');
@@ -609,6 +625,7 @@ void main() {
             itemCount: 3,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 0,
             autoplay: true,
             autoplayInterval: const Duration(seconds: 1),
@@ -652,6 +669,7 @@ void main() {
             itemCount: 3,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 2, // Start at last page
             autoplay: true,
             autoplayInterval: const Duration(seconds: 1),
@@ -688,6 +706,7 @@ void main() {
             itemCount: 3,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 0,
             autoplay: true,
             autoplayInterval: const Duration(seconds: 1),
@@ -744,6 +763,7 @@ void main() {
             itemCount: 3,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 0,
             enableShadow: true,
             elevation: 10.0,
@@ -811,6 +831,7 @@ void main() {
             itemCount: 3,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 0,
             mode: CoverflowMode.classic,
             itemBuilder: (context, index) {
@@ -838,6 +859,7 @@ void main() {
             itemCount: 3,
             itemWidth: 200,
             itemHeight: 300,
+            scrollDirection: Axis.horizontal,
             initialPage: 0,
             mode: CoverflowMode.classic,
             visibleItems: 2,
@@ -865,48 +887,55 @@ void main() {
   testWidgets('CoverflowCarouselController emits normalized and raw progress updates',
       (WidgetTester tester) async {
     final controller = CoverflowCarouselController();
-    final List<double> normalizedStreamValues = [];
-    final List<double> rawStreamValues = [];
+    final List<double> normalizedValues = [];
+    final List<double> rawValues = [];
 
-    final subscriptionNormalized = controller.pageStream.listen((val) {
-      normalizedStreamValues.add(val);
-    });
-    final subscriptionRaw = controller.rawPageStream.listen((val) {
-      rawStreamValues.add(val);
-    });
+    void onNormalizedChange() {
+      normalizedValues.add(controller.page);
+    }
+    void onRawChange() {
+      rawValues.add(controller.rawPage);
+    }
 
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: CoverflowCarousel.builder(
-            itemCount: 5,
-            itemWidth: 200,
-            itemHeight: 300,
-            controller: controller,
-            initialPage: 0,
-            itemBuilder: (context, index) {
-              return Text('Item $index');
-            },
+    controller.pageListenable.addListener(onNormalizedChange);
+    controller.rawPageListenable.addListener(onRawChange);
+
+    try {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CoverflowCarousel.builder(
+              itemCount: 5,
+              itemWidth: 200,
+              itemHeight: 300,
+              scrollDirection: Axis.horizontal,
+              isInfinite: false,
+              controller: controller,
+              initialPage: 0,
+              itemBuilder: (context, index) {
+                return Text('Item $index');
+              },
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(controller.page, 0.0);
-    expect(controller.rawPage, 0.0);
+      expect(controller.page, 0.0);
+      expect(controller.rawPage, 0.0);
 
-    controller.animateTo(1);
-    await tester.pumpAndSettle();
+      controller.animateTo(1);
+      await tester.pumpAndSettle();
 
-    expect(controller.page, 1.0);
-    expect(controller.rawPage, 1.0);
+      expect(controller.page, 1.0);
+      expect(controller.rawPage, 1.0);
 
-    expect(normalizedStreamValues, contains(1.0));
-    expect(rawStreamValues, contains(1.0));
-
-    await subscriptionNormalized.cancel();
-    await subscriptionRaw.cancel();
-    controller.dispose();
+      expect(normalizedValues, contains(1.0));
+      expect(rawValues, contains(1.0));
+    } finally {
+      controller.pageListenable.removeListener(onNormalizedChange);
+      controller.rawPageListenable.removeListener(onRawChange);
+      controller.dispose();
+    }
   });
 
   testWidgets('CoverflowCarousel resolves classic mode defaults and custom overrides correctly in vertical direction',
@@ -1002,8 +1031,21 @@ void main() {
     final overlayFinder = find.byKey(const Key('overlay-widget'));
     expect(overlayFinder, findsOneWidget);
 
-    final transformFinder = find.ancestor(of: overlayFinder, matching: find.byType(Transform));
+    final transformFinder = find.descendant(of: overlayFinder, matching: find.byType(Transform));
     expect(transformFinder, findsOneWidget);
+  });
+
+  test('Controller stream test', () async {
+    final controller = CoverflowCarouselController();
+    final List<double> values = [];
+    final sub = controller.pageStream.listen((val) {
+      values.add(val);
+    });
+    controller.updateMetrics(rawPage: 1.0, normalizedPage: 1.0);
+    await Future.delayed(Duration.zero);
+    expect(values, contains(1.0));
+    await sub.cancel();
+    controller.dispose();
   });
 }
 
