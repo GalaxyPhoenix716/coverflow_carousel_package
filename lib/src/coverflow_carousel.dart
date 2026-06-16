@@ -347,13 +347,25 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
   }
 
   void _pageListener() {
-    final page = _controller.page ?? 0;
+    final page = _controller.page ?? 0.0;
 
     void update() {
       if (!mounted) return;
       setState(() {
         currentPage = page;
       });
+
+      if (widget.controller != null) {
+        final realCount = widget.itemCount;
+        double normalized = page;
+        if (widget.isInfinite && realCount > 0) {
+          normalized = page % realCount;
+          if (normalized < 0) {
+            normalized += realCount;
+          }
+        }
+        widget.controller!.updateMetrics(rawPage: page, normalizedPage: normalized);
+      }
 
       final rounded = page.round();
       final realIndex = widget.isInfinite && widget.itemCount > 0
@@ -474,6 +486,20 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
     }
   }
 
+  void _updateControllerMetrics() {
+    if (widget.controller == null) return;
+    final page = _controller.hasClients ? (_controller.page ?? _initialVirtualPage.toDouble()) : _initialVirtualPage.toDouble();
+    final realCount = widget.itemCount;
+    double normalized = page;
+    if (widget.isInfinite && realCount > 0) {
+      normalized = page % realCount;
+      if (normalized < 0) {
+        normalized += realCount;
+      }
+    }
+    widget.controller!.updateMetrics(rawPage: page, normalizedPage: normalized);
+  }
+
   void _attachController() {
     widget.controller?.attach(
       next: () {
@@ -499,6 +525,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
         );
       },
     );
+    _updateControllerMetrics();
   }
 
   int _getNearestVirtualPage(

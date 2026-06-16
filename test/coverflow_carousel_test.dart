@@ -861,5 +861,53 @@ void main() {
     final overriddenPageView = tester.widget<PageView>(find.byType(PageView));
     expect(overriddenPageView.controller!.viewportFraction, 0.75);
   });
+
+  testWidgets('CoverflowCarouselController emits normalized and raw progress updates',
+      (WidgetTester tester) async {
+    final controller = CoverflowCarouselController();
+    final List<double> normalizedStreamValues = [];
+    final List<double> rawStreamValues = [];
+
+    final subscriptionNormalized = controller.pageStream.listen((val) {
+      normalizedStreamValues.add(val);
+    });
+    final subscriptionRaw = controller.rawPageStream.listen((val) {
+      rawStreamValues.add(val);
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CoverflowCarousel.builder(
+            itemCount: 5,
+            itemWidth: 200,
+            itemHeight: 300,
+            controller: controller,
+            initialPage: 0,
+            itemBuilder: (context, index) {
+              return Text('Item $index');
+            },
+          ),
+        ),
+      ),
+    );
+
+    expect(controller.page, 0.0);
+    expect(controller.rawPage, 0.0);
+
+    controller.animateTo(1);
+    await tester.pumpAndSettle();
+
+    expect(controller.page, 1.0);
+    expect(controller.rawPage, 1.0);
+
+    expect(normalizedStreamValues, contains(1.0));
+    expect(rawStreamValues, contains(1.0));
+
+    await subscriptionNormalized.cancel();
+    await subscriptionRaw.cancel();
+    controller.dispose();
+  });
 }
+
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:coverflow_carousel/coverflow_carousel.dart';
+import 'dart:ui';
 
 void main() {
   runApp(const CoverflowCarouselExampleApp());
@@ -15,12 +16,9 @@ class CoverflowCarouselExampleApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        primaryColor: Colors.deepPurple,
-        scaffoldBackgroundColor: const Color(0xFF0F0E17),
-        colorScheme: const ColorScheme.dark(
-          primary: Colors.deepPurple,
-          secondary: Colors.pinkAccent,
-        ),
+        useMaterial3: true,
+        scaffoldBackgroundColor: Colors.transparent,
+        fontFamily: 'Roboto',
       ),
       home: const CoverflowDemoScreen(),
     );
@@ -55,6 +53,9 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
   double _shadowElevation = 8.0;
   double _cardCornerRadiusValue = 24.0;
 
+  // Active configuration categories for the control panel tabs
+  int _configTab = 0; // 0: Layout, 1: Motion & Interactivity, 2: VFX & Shadows
+
   // Re-keying widget to easily trigger entry animation reload
   Key _carouselKey = UniqueKey();
 
@@ -63,31 +64,31 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
     {
       'title': 'Nebula Voyage',
       'subtitle': 'Explore cosmic horizons',
-      'colors': [Colors.deepPurple, Colors.pink],
+      'colors': [const Color(0xFF6A11CB), const Color(0xFF2575FC)],
       'icon': Icons.rocket_launch,
     },
     {
       'title': 'Oceanic Abyss',
       'subtitle': 'Deep sea discoveries',
-      'colors': [Colors.blue, Colors.cyan],
+      'colors': [const Color(0xFF00c6ff), const Color(0xFF0072ff)],
       'icon': Icons.sailing,
     },
     {
       'title': 'Sunset Dunes',
       'subtitle': 'Warm desert winds',
-      'colors': [Colors.orange, Colors.red],
+      'colors': [const Color(0xFFf12711), const Color(0xFFf5af19)],
       'icon': Icons.wb_sunny,
     },
     {
       'title': 'Forest Oasis',
       'subtitle': 'Ancient whispering woods',
-      'colors': [Colors.teal, Colors.green],
+      'colors': [const Color(0xFF11998e), const Color(0xFF38ef7d)],
       'icon': Icons.forest,
     },
     {
       'title': 'Aurora Sky',
       'subtitle': 'Northern lights dance',
-      'colors': [Colors.purple, Colors.indigo],
+      'colors': [const Color(0xFF833ab4), const Color(0xFFfd1d1d)],
       'icon': Icons.ac_unit,
     },
   ];
@@ -99,543 +100,970 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Coverflow Carousel Demo'),
+        title: const Text(
+          'COVERFLOW CAROUSEL',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2.0,
+            color: Colors.white,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // 1. The Coverflow Carousel Container
-              SizedBox(
-                height: _useCustomHeight ? _carouselHeight : 380,
-                child: Center(
-                  child: CoverflowCarousel.builder(
-                    key: _carouselKey,
-                    controller: _controller,
-                    itemCount: _demoCards.length,
-                    itemWidth: 260,
-                    itemHeight: 280,
-                    height: _useCustomHeight ? _carouselHeight : null,
-                    mode: _mode,
-                    isInfinite: _isInfinite,
-                    obscure: _obscure,
-                    viewportFraction: _viewportFraction,
-                    entryAnimation: _entryAnimation,
-                    entryAnimationDuration: const Duration(milliseconds: 1000),
-                    entryAnimationCurve: Curves.easeOutBack,
-                    enableHoverTilt: _enableHoverTilt,
-                    maxHoverTiltAngle: _maxHoverTiltAngle,
-                    enableScrollWheel: _enableScrollWheel,
-                    autoplay: _autoplay,
-                    autoplayInterval: Duration(
-                      milliseconds: (_autoplayIntervalSeconds * 1000).toInt(),
-                    ),
-                    enableShadow: _enableShadow,
-                    elevation: _shadowElevation,
-                    cardBorderRadius: BorderRadius.circular(
-                      _cardCornerRadiusValue,
-                    ),
-                    onPageChanged: (index) {
-                      setState(() {
-                        _activePage = index;
-                      });
-                    },
-                    centerOverlayBuilder: (context, index) {
-                      return Positioned(
-                        right: 130 - 28 - 8,
-                        bottom: -30,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Material(
-                            color: Colors.pinkAccent,
-                            shape: const CircleBorder(),
-                            elevation: 8,
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.play_arrow,
-                                color: Colors.white,
-                                size: 28,
+      body: _AmbientBackdrop(
+        pageListenable: _controller.pageListenable,
+        demoCards: _demoCards,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 1. The Coverflow Carousel Container
+                  SizedBox(
+                    height: _useCustomHeight ? _carouselHeight : 380,
+                    child: Center(
+                      child: CoverflowCarousel.builder(
+                        key: _carouselKey,
+                        controller: _controller,
+                        itemCount: _demoCards.length,
+                        itemWidth: 260,
+                        itemHeight: 280,
+                        height: _useCustomHeight ? _carouselHeight : null,
+                        mode: _mode,
+                        isInfinite: _isInfinite,
+                        obscure: _obscure,
+                        viewportFraction: _viewportFraction,
+                        entryAnimation: _entryAnimation,
+                        entryAnimationDuration: const Duration(
+                          milliseconds: 1000,
+                        ),
+                        entryAnimationCurve: Curves.easeOutBack,
+                        enableHoverTilt: _enableHoverTilt,
+                        maxHoverTiltAngle: _maxHoverTiltAngle,
+                        enableScrollWheel: _enableScrollWheel,
+                        autoplay: _autoplay,
+                        autoplayInterval: Duration(
+                          milliseconds: (_autoplayIntervalSeconds * 1000)
+                              .toInt(),
+                        ),
+                        enableShadow: _enableShadow,
+                        elevation: _shadowElevation,
+                        cardBorderRadius: BorderRadius.circular(
+                          _cardCornerRadiusValue,
+                        ),
+                        onPageChanged: (index) {
+                          setState(() {
+                            _activePage = index;
+                          });
+                        },
+                        centerOverlayBuilder: (context, index) {
+                          return Positioned(
+                            right: 130 - 28 - 8,
+                            bottom: -30,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: _PremiumPlayButton(
+                                title: _demoCards[index]['title'] as String,
                               ),
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Playing: ${_demoCards[index]['title']}',
+                            ),
+                          );
+                        },
+                        itemBuilder: (context, index) {
+                          final card = _demoCards[index];
+                          return Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(
+                                _cardCornerRadiusValue,
+                              ),
+                              gradient: LinearGradient(
+                                colors: card['colors'] as List<Color>,
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (card['colors'][0] as Color)
+                                      .withValues(alpha: 0.3),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                _cardCornerRadiusValue,
+                              ),
+                              child: Stack(
+                                children: [
+                                  // Glassmorphic top glow overlay
+                                  Positioned(
+                                    top: -50,
+                                    left: -50,
+                                    child: Container(
+                                      width: 150,
+                                      height: 150,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white.withValues(
+                                          alpha: 0.15,
+                                        ),
+                                      ),
                                     ),
-                                    duration: const Duration(seconds: 1),
                                   ),
-                                );
-                              },
+                                  Padding(
+                                    padding: const EdgeInsets.all(20.0),
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.bottomLeft,
+                                      child: SizedBox(
+                                        width: 220, // itemWidth 260 minus horizontal padding 40
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.15,
+                                                ),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                card['icon'],
+                                                size: 28,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 24),
+                                            Text(
+                                              card['title'] as String,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.w900,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              card['subtitle'],
+                                              style: TextStyle(
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.8,
+                                                ),
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 20),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Dynamic Liquid Page Indicator
+                  _CoverflowPageIndicator(
+                    itemCount: _demoCards.length,
+                    pageListenable: _controller.pageListenable,
+                    onTap: (index) {
+                      _controller.animateTo(index);
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Programmatic Actions Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _CompactIconButton(
+                        icon: Icons.arrow_back_rounded,
+                        onPressed: () => _controller.previous(),
+                      ),
+                      const SizedBox(width: 24),
+                      Text(
+                        'INDEX ${_activePage + 1} / ${_demoCards.length}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.5,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      _CompactIconButton(
+                        icon: Icons.arrow_forward_rounded,
+                        onPressed: () => _controller.next(),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // Glassmorphic Settings Card Panel
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        width: 1,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Category Headers Tabs
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    _TabHeader(
+                                      title: 'LAYOUT',
+                                      isActive: _configTab == 0,
+                                      onTap: () =>
+                                          setState(() => _configTab = 0),
+                                    ),
+                                    _TabHeader(
+                                      title: 'MOTION',
+                                      isActive: _configTab == 1,
+                                      onTap: () =>
+                                          setState(() => _configTab = 1),
+                                    ),
+                                    _TabHeader(
+                                      title: 'EFFECTS',
+                                      isActive: _configTab == 2,
+                                      onTap: () =>
+                                          setState(() => _configTab = 2),
+                                    ),
+                                  ],
+                                ),
+                                const Divider(
+                                  height: 32,
+                                  color: Colors.white24,
+                                ),
+
+                                if (_configTab == 0) ...[
+                                  // Tab 0: Layout settings
+                                  _GlassDropdown<CoverflowMode>(
+                                    title: 'Carousel Preset Mode',
+                                    value: _mode,
+                                    items: CoverflowMode.values,
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setState(() {
+                                          _mode = val;
+                                          _viewportFraction =
+                                              val == CoverflowMode.classic
+                                              ? 0.88
+                                              : 0.28;
+                                        });
+                                      }
+                                    },
+                                    labelBuilder: (m) =>
+                                        m == CoverflowMode.coverflow
+                                        ? '3D Coverflow'
+                                        : 'Classic Slider',
+                                  ),
+                                  _GlassSlider(
+                                    title:
+                                        'Viewport Fraction (Card Scale / Swipe Area)',
+                                    value: _viewportFraction,
+                                    min: 0.15,
+                                    max: 1.0,
+                                    divisions: 85,
+                                    onChanged: (val) =>
+                                        setState(() => _viewportFraction = val),
+                                  ),
+                                  _GlassSwitch(
+                                    title: 'Custom Height Constraints',
+                                    value: _useCustomHeight,
+                                    onChanged: (val) =>
+                                        setState(() => _useCustomHeight = val),
+                                  ),
+                                  if (_useCustomHeight)
+                                    _GlassSlider(
+                                      title: 'Carousel Height',
+                                      value: _carouselHeight,
+                                      min: 280.0,
+                                      max: 450.0,
+                                      onChanged: (val) =>
+                                          setState(() => _carouselHeight = val),
+                                      suffix: 'px',
+                                    ),
+                                  _GlassSlider(
+                                    title: 'Card Border Radius',
+                                    value: _cardCornerRadiusValue,
+                                    min: 0.0,
+                                    max: 40.0,
+                                    onChanged: (val) => setState(
+                                      () => _cardCornerRadiusValue = val,
+                                    ),
+                                    suffix: 'px',
+                                  ),
+                                ] else if (_configTab == 1) ...[
+                                  // Tab 1: Motion settings
+                                  _GlassSwitch(
+                                    title: 'Infinite Scroll Looping',
+                                    value: _isInfinite,
+                                    onChanged: (val) =>
+                                        setState(() => _isInfinite = val),
+                                  ),
+                                  _GlassSwitch(
+                                    title: 'Autoplay (Auto Advance)',
+                                    value: _autoplay,
+                                    onChanged: (val) =>
+                                        setState(() => _autoplay = val),
+                                  ),
+                                  if (_autoplay)
+                                    _GlassSlider(
+                                      title: 'Autoplay Speed (Interval)',
+                                      value: _autoplayIntervalSeconds,
+                                      min: 1.0,
+                                      max: 8.0,
+                                      divisions: 70,
+                                      onChanged: (val) => setState(
+                                        () => _autoplayIntervalSeconds = val,
+                                      ),
+                                      suffix: 's',
+                                    ),
+                                  _GlassSwitch(
+                                    title: 'Mouse Scroll Wheel Navigation',
+                                    value: _enableScrollWheel,
+                                    onChanged: (val) => setState(
+                                      () => _enableScrollWheel = val,
+                                    ),
+                                  ),
+                                ] else ...[
+                                  // Tab 2: VFX settings
+                                  _GlassDropdown<CoverflowEntryAnimation>(
+                                    title: 'Entry Intro Animation',
+                                    value: _entryAnimation,
+                                    items: CoverflowEntryAnimation.values,
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setState(() => _entryAnimation = val);
+                                        _reloadCarousel();
+                                      }
+                                    },
+                                    labelBuilder: (a) => a.name,
+                                  ),
+                                  _GlassSlider(
+                                    title: 'Obscure Blur (Background Cards)',
+                                    value: _obscure,
+                                    min: 0.0,
+                                    max: 1.0,
+                                    divisions: 10,
+                                    onChanged: (val) =>
+                                        setState(() => _obscure = val),
+                                  ),
+                                  _GlassSwitch(
+                                    title: '3D Elevation Shadows',
+                                    value: _enableShadow,
+                                    onChanged: (val) =>
+                                        setState(() => _enableShadow = val),
+                                  ),
+                                  if (_enableShadow)
+                                    _GlassSlider(
+                                      title: 'Shadow Depth (Elevation)',
+                                      value: _shadowElevation,
+                                      min: 0.0,
+                                      max: 20.0,
+                                      onChanged: (val) => setState(
+                                        () => _shadowElevation = val,
+                                      ),
+                                    ),
+                                  _GlassSwitch(
+                                    title: '3D Pointer Hover Tilt',
+                                    value: _enableHoverTilt,
+                                    onChanged: (val) =>
+                                        setState(() => _enableHoverTilt = val),
+                                  ),
+                                  if (_enableHoverTilt)
+                                    _GlassSlider(
+                                      title: 'Max Hover Tilt Angle',
+                                      value: _maxHoverTiltAngle,
+                                      min: 0.05,
+                                      max: 0.35,
+                                      onChanged: (val) => setState(
+                                        () => _maxHoverTiltAngle = val,
+                                      ),
+                                      suffix: ' rad',
+                                    ),
+                                ],
+
+                                const SizedBox(height: 24),
+                                Center(
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(14),
+                                    onTap: _reloadCarousel,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            Colors.pinkAccent,
+                                            Colors.purpleAccent,
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.refresh,
+                                            color: Colors.white,
+                                            size: 18,
+                                          ),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            'Trigger Entry Animation',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      );
-                    },
-                    itemBuilder: (context, index) {
-                      final card = _demoCards[index];
-                      return Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(
-                            _cardCornerRadiusValue,
-                          ),
-                          gradient: LinearGradient(
-                            colors: card['colors'] as List<Color>,
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                            _cardCornerRadiusValue,
-                          ),
-                          child: Stack(
-                            children: [
-                              // Glassmorphic top glow overlay
-                              Positioned(
-                                top: -50,
-                                left: -50,
-                                child: Container(
-                                  width: 150,
-                                  height: 150,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white.withValues(alpha: 0.15),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.bottomLeft,
-                                  child: SizedBox(
-                                    width:
-                                        228, // itemWidth 260 minus horizontal padding 32
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        Icon(
-                                          card['icon'],
-                                          size: 44,
-                                          color: Colors.white,
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                          card['title'] as String,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          card['subtitle'],
-                                          style: TextStyle(
-                                            color: Colors.white.withValues(
-                                              alpha: 0.8,
-                                            ),
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-
-              // Active Page Indicator
-              Text(
-                'Focused Index: $_activePage',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.pinkAccent,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // 2. Programmatic Controls
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[850],
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
                       ),
                     ),
-                    onPressed: () => _controller.previous(),
-                    icon: const Icon(Icons.arrow_back),
-                    label: const Text('Prev'),
-                  ),
-                  const SizedBox(width: 20),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[850],
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                    onPressed: () => _controller.next(),
-                    icon: const Icon(Icons.arrow_forward),
-                    label: const Text('Next'),
                   ),
                 ],
               ),
-              const SizedBox(height: 30),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-              // 3. Configurations Card Panel
-              Card(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                color: const Color(0xFF161522),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Interactive Configurations',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Divider(height: 24, color: Colors.grey),
+/// Dynamic background that listens to page updates and interpolates gradient colors
+class _AmbientBackdrop extends StatelessWidget {
+  final ValueNotifier<double> pageListenable;
+  final List<Map<String, dynamic>> demoCards;
+  final Widget child;
 
-                      // Carousel Mode Dropdown
-                      ListTile(
-                        title: const Text('Carousel Mode'),
-                        subtitle: const Text('Choose layout style preset'),
-                        trailing: SizedBox(
-                          width: 140,
-                          child: DropdownButton<CoverflowMode>(
-                            isExpanded: true,
-                            value: _mode,
-                            underline: const SizedBox(),
-                            onChanged: (CoverflowMode? newValue) {
-                              if (newValue != null) {
-                                setState(() {
-                                  _mode = newValue;
-                                  _viewportFraction =
-                                      newValue == CoverflowMode.classic
-                                      ? 0.88
-                                      : 0.28;
-                                });
-                              }
-                            },
-                            items: CoverflowMode.values.map((mode) {
-                              return DropdownMenuItem<CoverflowMode>(
-                                value: mode,
-                                child: Text(
-                                  mode == CoverflowMode.coverflow
-                                      ? 'Coverflow'
-                                      : 'Classic',
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ),
-                      const Divider(height: 24, color: Colors.grey),
+  const _AmbientBackdrop({
+    required this.pageListenable,
+    required this.demoCards,
+    required this.child,
+  });
 
-                      // Infinite Scroll Toggle
-                      SwitchListTile(
-                        title: const Text('Infinite Scroll'),
-                        subtitle: const Text('Enable wrap-around page looping'),
-                        value: _isInfinite,
-                        activeThumbColor: Colors.deepPurpleAccent,
-                        onChanged: (val) {
-                          setState(() {
-                            _isInfinite = val;
-                          });
-                        },
-                      ),
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<double>(
+      valueListenable: pageListenable,
+      builder: (context, page, _) {
+        final len = demoCards.length;
+        if (len == 0) return child;
 
-                      // Obscure Blur Slider
-                      ListTile(
-                        title: const Text('Obscure Blur Intensity'),
-                        subtitle: Slider(
-                          value: _obscure,
-                          min: 0.0,
-                          max: 1.0,
-                          divisions: 10,
-                          activeColor: Colors.deepPurpleAccent,
-                          label: _obscure.toStringAsFixed(1),
-                          onChanged: (val) {
-                            setState(() {
-                              _obscure = val;
-                            });
-                          },
-                        ),
-                      ),
+        // Extract floating bounds
+        final int indexA = page.floor() % len;
+        final int indexB = (indexA + 1) % len;
+        final double t = page - page.floor();
 
-                      // Viewport Fraction Slider
-                      ListTile(
-                        title: const Text('Viewport Fraction (Drag Area)'),
-                        subtitle: Slider(
-                          value: _viewportFraction,
-                          min: 0.15,
-                          max: 1.0,
-                          activeColor: Colors.deepPurpleAccent,
-                          label: _viewportFraction.toStringAsFixed(2),
-                          onChanged: (val) {
-                            setState(() {
-                              _viewportFraction = val;
-                            });
-                          },
-                        ),
-                      ),
+        final Color colorAA = demoCards[indexA]['colors'][0];
+        final Color colorAB = demoCards[indexA]['colors'][1];
+        final Color colorBA = demoCards[indexB]['colors'][0];
+        final Color colorBB = demoCards[indexB]['colors'][1];
 
-                      // Custom Height Toggle
-                      SwitchListTile(
-                        title: const Text('Custom Container Height'),
-                        subtitle: const Text(
-                          'Manually constrain the carousel container height',
-                        ),
-                        value: _useCustomHeight,
-                        activeThumbColor: Colors.deepPurpleAccent,
-                        onChanged: (val) {
-                          setState(() {
-                            _useCustomHeight = val;
-                          });
-                        },
-                      ),
+        final Color colorA = Color.lerp(colorAA, colorBA, t) ?? colorAA;
+        final Color colorB = Color.lerp(colorAB, colorBB, t) ?? colorAB;
 
-                      // Custom Height Slider
-                      if (_useCustomHeight)
-                        ListTile(
-                          title: const Text('Carousel Height'),
-                          subtitle: Slider(
-                            value: _carouselHeight,
-                            min: 280.0,
-                            max: 450.0,
-                            activeColor: Colors.deepPurpleAccent,
-                            label: '${_carouselHeight.toStringAsFixed(0)}px',
-                            onChanged: (val) {
-                              setState(() {
-                                _carouselHeight = val;
-                              });
-                            },
-                          ),
-                        ),
-
-                      // Autoplay Toggle
-                      SwitchListTile(
-                        title: const Text('Autoplay'),
-                        subtitle: const Text(
-                          'Auto-advance pages at a set interval',
-                        ),
-                        value: _autoplay,
-                        activeThumbColor: Colors.deepPurpleAccent,
-                        onChanged: (val) {
-                          setState(() {
-                            _autoplay = val;
-                          });
-                        },
-                      ),
-
-                      // Autoplay Interval Slider
-                      if (_autoplay)
-                        ListTile(
-                          title: const Text('Autoplay Interval'),
-                          subtitle: Slider(
-                            value: _autoplayIntervalSeconds,
-                            min: 1.0,
-                            max: 8.0,
-                            divisions: 14,
-                            activeColor: Colors.deepPurpleAccent,
-                            label:
-                                '${_autoplayIntervalSeconds.toStringAsFixed(1)}s',
-                            onChanged: (val) {
-                              setState(() {
-                                _autoplayIntervalSeconds = val;
-                              });
-                            },
-                          ),
-                        ),
-
-                      // Shadow Toggle
-                      SwitchListTile(
-                        title: const Text('3D Elevation Shadows'),
-                        subtitle: const Text(
-                          'Render dynamic drop shadows under cards',
-                        ),
-                        value: _enableShadow,
-                        activeThumbColor: Colors.deepPurpleAccent,
-                        onChanged: (val) {
-                          setState(() {
-                            _enableShadow = val;
-                          });
-                        },
-                      ),
-
-                      // Shadow Elevation Slider
-                      if (_enableShadow)
-                        ListTile(
-                          title: const Text('Shadow Elevation'),
-                          subtitle: Slider(
-                            value: _shadowElevation,
-                            min: 0.0,
-                            max: 20.0,
-                            activeColor: Colors.deepPurpleAccent,
-                            label: '${_shadowElevation.toStringAsFixed(1)}px',
-                            onChanged: (val) {
-                              setState(() {
-                                _shadowElevation = val;
-                              });
-                            },
-                          ),
-                        ),
-
-                      // Card Corner Radius Slider
-                      ListTile(
-                        title: const Text('Card Corner Radius'),
-                        subtitle: Slider(
-                          value: _cardCornerRadiusValue,
-                          min: 0.0,
-                          max: 40.0,
-                          activeColor: Colors.deepPurpleAccent,
-                          label:
-                              '${_cardCornerRadiusValue.toStringAsFixed(0)}px',
-                          onChanged: (val) {
-                            setState(() {
-                              _cardCornerRadiusValue = val;
-                            });
-                          },
-                        ),
-                      ),
-
-                      // Entry Animation Selection Dropdown
-                      ListTile(
-                        title: const Text('Entry Animation'),
-                        trailing: SizedBox(
-                          width: 140,
-                          child: DropdownButton<CoverflowEntryAnimation>(
-                            isExpanded: true,
-                            value: _entryAnimation,
-                            underline: const SizedBox(),
-                            onChanged: (CoverflowEntryAnimation? newValue) {
-                              if (newValue != null) {
-                                setState(() {
-                                  _entryAnimation = newValue;
-                                });
-                                _reloadCarousel();
-                              }
-                            },
-                            items: CoverflowEntryAnimation.values.map((anim) {
-                              return DropdownMenuItem<CoverflowEntryAnimation>(
-                                value: anim,
-                                child: Text(
-                                  anim.name,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ),
-
-                      // Mouse Scroll Wheel Toggle
-                      SwitchListTile(
-                        title: const Text('Mouse Scroll Wheel'),
-                        subtitle: const Text(
-                          'Scroll mouse wheel or trackpad to navigate',
-                        ),
-                        value: _enableScrollWheel,
-                        activeThumbColor: Colors.deepPurpleAccent,
-                        onChanged: (val) {
-                          setState(() {
-                            _enableScrollWheel = val;
-                          });
-                        },
-                      ),
-
-                      // Hover Tilt Toggle
-                      SwitchListTile(
-                        title: const Text('3D Hover Tilt'),
-                        subtitle: const Text(
-                          'Tilt cards in 3D when hovered by mouse',
-                        ),
-                        value: _enableHoverTilt,
-                        activeThumbColor: Colors.deepPurpleAccent,
-                        onChanged: (val) {
-                          setState(() {
-                            _enableHoverTilt = val;
-                          });
-                        },
-                      ),
-
-                      // Hover Tilt Intensity Slider
-                      if (_enableHoverTilt)
-                        ListTile(
-                          title: const Text('Max Tilt Angle (Hover)'),
-                          subtitle: Slider(
-                            value: _maxHoverTiltAngle,
-                            min: 0.05,
-                            max: 0.35,
-                            activeColor: Colors.deepPurpleAccent,
-                            label:
-                                '${(_maxHoverTiltAngle * 180 / 3.14159).toStringAsFixed(0)}°',
-                            onChanged: (val) {
-                              setState(() {
-                                _maxHoverTiltAngle = val;
-                              });
-                            },
-                          ),
-                        ),
-
-                      const SizedBox(height: 12),
-                      Center(
-                        child: TextButton.icon(
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.pinkAccent,
-                          ),
-                          onPressed: _reloadCarousel,
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Re-trigger Entry Animation'),
-                        ),
-                      ),
+        return Stack(
+          children: [
+            // Dark solid canvas
+            Positioned.fill(child: Container(color: const Color(0xFF060509))),
+            // Top ambient gradient glow
+            Positioned(
+              top: -200,
+              left: -150,
+              width: 650,
+              height: 650,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      colorA.withValues(alpha: 0.18),
+                      colorA.withValues(alpha: 0.0),
                     ],
                   ),
                 ),
               ),
+            ),
+            // Bottom ambient gradient glow
+            Positioned(
+              bottom: -200,
+              right: -150,
+              width: 650,
+              height: 650,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      colorB.withValues(alpha: 0.15),
+                      colorB.withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // The content
+            Positioned.fill(child: child),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Liquid sliding active pill page indicator
+class _CoverflowPageIndicator extends StatelessWidget {
+  final int itemCount;
+  final ValueNotifier<double> pageListenable;
+  final void Function(int) onTap;
+
+  const _CoverflowPageIndicator({
+    required this.itemCount,
+    required this.pageListenable,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const double dotSize = 8.0;
+    const double spacing = 12.0;
+    const double step = dotSize + spacing;
+
+    return ValueListenableBuilder<double>(
+      valueListenable: pageListenable,
+      builder: (context, page, _) {
+        final double t = page - page.floor();
+        final int floor = page.floor();
+
+        final double activeLeft;
+        final double activeWidth;
+
+        if (t < 0.5) {
+          activeLeft = (floor % itemCount) * step;
+          activeWidth = dotSize + (t / 0.5) * step;
+        } else {
+          activeLeft = (floor % itemCount) * step + ((t - 0.5) / 0.5) * step;
+          activeWidth = dotSize + (1.0 - (t - 0.5) / 0.5) * step;
+        }
+
+        final int indexA = floor % itemCount;
+        final int indexB = (floor + 1) % itemCount;
+
+        final double left;
+        final double width;
+
+        if (indexB == 0 && t > 0.0) {
+          if (t < 0.5) {
+            left = indexA * step;
+            width = dotSize + (t / 0.5) * step;
+          } else {
+            left = 0;
+            width = dotSize + (1.0 - (t - 0.5) / 0.5) * step;
+          }
+        } else {
+          left = activeLeft;
+          width = activeWidth;
+        }
+
+        return Container(
+          height: 24,
+          alignment: Alignment.center,
+          child: SizedBox(
+            width: itemCount * dotSize + (itemCount - 1) * spacing,
+            height: dotSize,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                ...List.generate(itemCount, (i) {
+                  return Positioned(
+                    left: i * step,
+                    top: 0,
+                    width: dotSize,
+                    height: dotSize,
+                    child: GestureDetector(
+                      onTap: () => onTap(i),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.15),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+                Positioned(
+                  left: left,
+                  top: 0,
+                  width: width,
+                  height: dotSize,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(dotSize / 2),
+                      gradient: const LinearGradient(
+                        colors: [Colors.pinkAccent, Colors.purpleAccent],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.pinkAccent.withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Premium Play Button with dynamic scale on press
+class _PremiumPlayButton extends StatefulWidget {
+  final String title;
+
+  const _PremiumPlayButton({required this.title});
+
+  @override
+  State<_PremiumPlayButton> createState() => _PremiumPlayButtonState();
+}
+
+class _PremiumPlayButtonState extends State<_PremiumPlayButton> {
+  double _scale = 1.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _scale = 0.9),
+      onTapUp: (_) {
+        setState(() => _scale = 1.0);
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF1E1C29),
+            content: Text(
+              'Playing "${widget.title}"...',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            duration: const Duration(seconds: 1),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      },
+      onTapCancel: () => setState(() => _scale = 1.0),
+      child: Transform.scale(
+        scale: _scale,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Colors.pinkAccent, Color(0xFFFD5E53)],
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.pinkAccent.withValues(alpha: 0.4),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
+          child: const Icon(
+            Icons.play_arrow_rounded,
+            color: Colors.white,
+            size: 24,
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _CompactIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const _CompactIconButton({required this.icon, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.06),
+      shape: const CircleBorder(),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.white70, size: 20),
+        onPressed: onPressed,
+      ),
+    );
+  }
+}
+
+class _TabHeader extends StatelessWidget {
+  final String title;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _TabHeader({
+    required this.title,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+                color: isActive ? Colors.pinkAccent : Colors.white54,
+              ),
+            ),
+            const SizedBox(height: 4),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: isActive ? 16 : 0,
+              height: 2,
+              decoration: BoxDecoration(
+                color: Colors.pinkAccent,
+                borderRadius: BorderRadius.circular(1),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassSwitch extends StatelessWidget {
+  final String title;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _GlassSwitch({
+    required this.title,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+        value: value,
+        activeColor: Colors.pinkAccent,
+        inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
+        onChanged: onChanged,
+      ),
+    );
+  }
+}
+
+class _GlassSlider extends StatelessWidget {
+  final String title;
+  final double value;
+  final double min;
+  final double max;
+  final int? divisions;
+  final ValueChanged<double> onChanged;
+  final String suffix;
+
+  const _GlassSlider({
+    required this.title,
+    required this.value,
+    required this.min,
+    required this.max,
+    this.divisions,
+    required this.onChanged,
+    this.suffix = '',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: 13, color: Colors.white70),
+                ),
+              ),
+              Text(
+                '${value.toStringAsFixed(2)}$suffix',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.pinkAccent,
+                ),
+              ),
+            ],
+          ),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 3,
+              activeTrackColor: Colors.pinkAccent,
+              inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
+              thumbColor: Colors.white,
+              overlayColor: Colors.pinkAccent.withValues(alpha: 0.2),
+            ),
+            child: Slider(
+              value: value,
+              min: min,
+              max: max,
+              divisions: divisions,
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GlassDropdown<T> extends StatelessWidget {
+  final String title;
+  final T value;
+  final List<T> items;
+  final ValueChanged<T?> onChanged;
+  final String Function(T) labelBuilder;
+
+  const _GlassDropdown({
+    required this.title,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+    required this.labelBuilder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            ),
+            child: DropdownButton<T>(
+              value: value,
+              underline: const SizedBox(),
+              dropdownColor: const Color(0xFF1E1C29),
+              borderRadius: BorderRadius.circular(14),
+              onChanged: onChanged,
+              items: items.map((item) {
+                return DropdownMenuItem<T>(
+                  value: item,
+                  child: Text(
+                    labelBuilder(item),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }
