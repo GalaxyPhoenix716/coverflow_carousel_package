@@ -1,5 +1,12 @@
 # Coverflow Carousel
 
+[![pub package](https://img.shields.io/pub/v/coverflow_carousel.svg?label=pub.dev&color=blue&style=flat-square)](https://pub.dev/packages/coverflow_carousel)
+[![likes](https://img.shields.io/pub/likes/coverflow_carousel?style=flat-square)](https://pub.dev/packages/coverflow_carousel)
+[![popularity](https://img.shields.io/pub/popularity/coverflow_carousel?style=flat-square)](https://pub.dev/packages/coverflow_carousel)
+[![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=flat-square&logo=Flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?style=flat-square&logo=Dart&logoColor=white)](https://dart.dev)
+[![license](https://img.shields.io/github/license/GalaxyPhoenix716/coverflow_carousel_package?style=flat-square&color=green)](https://github.com/GalaxyPhoenix716/coverflow_carousel_package/blob/main/LICENSE)
+
 A beautiful, highly customizable 3D coverflow-style carousel for Flutter.
 
 Create immersive experiences with smooth perspective effects, overlapping cards, dynamic scaling, and effortless programmatic navigation.
@@ -8,32 +15,32 @@ Perfect for music apps, movie browsers, ecommerce showcases, galleries, portfoli
 
 ---
 
+
 ## Features
 
 ### Visuals & 3D Perspective
-* **Smooth 3D Coverflow Design**: Immersive carousel layout with customizable 3D perspective, skew angles, and depth scaling.
-* **Vertical & Horizontal Layouts**: Full native support for both horizontal and vertical scrolling directions with properly oriented 3D transformations.
-* **Dynamic Entry Animations**: Staggered fades, zoom scales, spacing expansions (horizontal fanning), sliding, and physical stacking effects.
-* **Depth & Shadows**: Real-time drop shadow calculations with customizable elevation and border clipping, plus optional blurring for off-center cards.
+* ![3D Coverflow](https://img.shields.io/badge/3D_Coverflow-02569B?style=flat-square) **Smooth 3D Coverflow Design**: Immersive carousel layout with customizable 3D perspective, skew angles, and depth scaling.
+* ![Vertical Scroll](https://img.shields.io/badge/Vertical_Scroll-blueviolet?style=flat-square) **Vertical & Horizontal Layouts**: Full native support for both horizontal and vertical scrolling directions with properly oriented 3D transformations.
+* ![Entry Animations](https://img.shields.io/badge/Entry_Animations-orange?style=flat-square) **Dynamic Entry Animations**: Staggered fades, zoom scales, spacing expansions (horizontal fanning), sliding, and physical stacking effects.
+* ![Depth & Shadows](https://img.shields.io/badge/Depth_%26_Shadows-db7093?style=flat-square) **Depth & Shadows**: Real-time drop shadow calculations with customizable elevation and border clipping, plus optional blurring for off-center cards.
 
 ### Interactions & Input
-* **3D Hover & Tilt Effects**: Interactive pointer-tracking that tilts cards in 3D space with customizable angles and smooth deceleration.
-* **Mouse Wheel & Trackpad Navigation**: Seamless, throttled scroll wheel interaction for web and desktop platforms.
-* **Multi-Gesture Compatibility**: Allows buttons, sliders, and gestures on active cards to respond naturally without interference.
-* **Click-to-Focus**: Auto-navigates and centers off-center cards when clicked or tapped.
-* **Infinite Looping**: Support for infinite scroll with seamless boundary transitions.
+* ![3D Hover Tilt](https://img.shields.io/badge/3D_Hover_Tilt-brightgreen?style=flat-square) **3D Hover & Tilt Effects**: Interactive pointer-tracking that tilts cards in 3D space with customizable angles and smooth deceleration.
+* ![Mouse & Trackpad](https://img.shields.io/badge/Mouse_%26_Trackpad-db7093?style=flat-square) **Mouse Wheel & Trackpad Navigation**: Seamless, throttled scroll wheel interaction for web and desktop platforms.
+* ![Active Gestures](https://img.shields.io/badge/Active_Gestures-yellowgreen?style=flat-square) **Multi-Gesture Compatibility**: Allows buttons, sliders, and gestures on active cards to respond naturally without interference.
+* ![Click to Focus](https://img.shields.io/badge/Click_to_Focus-ff69b4?style=flat-square) **Click-to-Focus**: Auto-navigates and centers off-center cards when clicked or tapped.
+* ![Infinite Loop](https://img.shields.io/badge/Infinite_Loop-red?style=flat-square) **Infinite Looping**: Support for infinite scroll with seamless boundary transitions.
 
 ### Customization & Builders
-* **Center Card Overlays**: Stack play buttons, badges, or details directly on the centered card with distance-linked fade transitions.
-* **Fully Adjustable Spacing**: Set custom overlap parameters, near card spacing, far card spacing, viewport fractions, and visible card counts.
-* **Custom Dimensions**: Support for explicit card width and height constraints.
+* ![Center Overlays](https://img.shields.io/badge/Center_Overlays-ff69b4?style=flat-square) **Center Card Overlays**: Stack play buttons, badges, or details directly on the centered card with distance-linked fade transitions.
+* ![Adjustable Spacing](https://img.shields.io/badge/Adjustable_Spacing-009688?style=flat-square) **Fully Adjustable Spacing**: Set custom overlap parameters, near card spacing, far card spacing, viewport fractions, and visible card counts.
+* ![Custom Dimensions](https://img.shields.io/badge/Custom_Dimensions-9c27b0?style=flat-square) **Custom Dimensions**: Support for explicit card width and height constraints.
 
 ### Performance & Controller
-* **Builder-Based API**: On-demand widget creation optimizes rendering performance for large or infinite datasets.
-* **Synchronous & Stream Controllers**: Programmatic navigation (`next`, `previous`, `animateTo`) paired with real-time stream/notifier scroll position updates.
-* **Suppressed Desktop Scrollbars**: Automatic scrollbar suppression for clean web/desktop presentation.
-* **Production Ready**: Optimized performance, fully tested, and zero external widget dependencies.
-
+* ![Builder API](https://img.shields.io/badge/Builder_API-009688?style=flat-square) **Builder-Based API**: On-demand widget creation optimizes rendering performance for large or infinite datasets.
+* ![External Control](https://img.shields.io/badge/External_Control-9c27b0?style=flat-square) **Synchronous & Stream Controllers**: Programmatic navigation (`next`, `previous`, `animateTo`) paired with real-time stream/notifier scroll position updates.
+* ![Desktop Scrollbars](https://img.shields.io/badge/Desktop_Scrollbars-lightgrey?style=flat-square) **Suppressed Desktop Scrollbars**: Automatic scrollbar suppression for clean web/desktop presentation.
+* ![Production Ready](https://img.shields.io/badge/Production_Ready-green?style=flat-square) **Production Ready**: Optimized performance, fully tested, and zero external widget dependencies.
 
 ## Preview
 
@@ -66,6 +73,9 @@ flutter pub get
 ```
 
 ## Basic Usage
+
+> [!IMPORTANT]
+> **API Change in v2.0.0**: The `scrollDirection` parameter is now **required** (compulsory) in the `CoverflowCarousel.builder` constructor to make layout orientation explicit.
 
 ```dart
 CoverflowCarousel.builder(
@@ -139,6 +149,8 @@ controller.rawPageStream.listen((double rawPage) {
 
 Make sure to call `controller.dispose()` when the controller is no longer needed to clean up stream subscriptions.
 
+> [!TIP]
+> **Performance Tip**: For lightweight, synchronous UI bindings (e.g. customized page indicators), prefer using `controller.pageListenable` or `controller.rawPageListenable` to avoid the asynchronous overhead of streams.
 
 ## Entry Animations
 
