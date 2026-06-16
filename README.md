@@ -265,10 +265,10 @@ Support scroll wheel and trackpad swipe movements to change pages. Navigation re
 
 Unlike traditional flat carousels, this package is designed to create a premium, dimensional user experience:
 
-* 📐 **True 3D Perspective**: Utilizes projection matrices to skew and scale cards dynamically based on scroll distance.
-* 🎚️ **Depth Overlap Layouts**: Overlap cards elegantly to fit more content visually while maintaining focus on the center card.
-* 🎢 **Liquid Transitions**: Seamless card scaling, blur offsets, drop shadows, and overlay fades animate dynamically as you scroll.
-* 🔌 **Zero Dependencies**: Built entirely on top of the native Flutter SDK to guarantee performance, stability, and future compatibility.
+* **True 3D Perspective**: Utilizes projection matrices to skew and scale cards dynamically based on scroll distance.
+* **Depth Overlap Layouts**: Overlap cards elegantly to fit more content visually while maintaining focus on the center card.
+* **Liquid Transitions**: Seamless card scaling, blur offsets, drop shadows, and overlay fades animate dynamically as you scroll.
+* **Zero Dependencies**: Built entirely on top of the native Flutter SDK to guarantee performance, stability, and future compatibility.
 
 ---
 
