@@ -19,29 +19,17 @@
 
 ## Features
 
-### Visuals & 3D Perspective
-* ![3D Coverflow](https://img.shields.io/badge/3D_Coverflow-02569B?style=flat-square) **Smooth 3D Coverflow Design**: Immersive carousel layout with customizable 3D perspective, skew angles, and depth scaling.
-* ![Vertical Scroll](https://img.shields.io/badge/Vertical_Scroll-blueviolet?style=flat-square) **Vertical & Horizontal Layouts**: Full native support for both horizontal and vertical scrolling directions with properly oriented 3D transformations.
-* ![Entry Animations](https://img.shields.io/badge/Entry_Animations-orange?style=flat-square) **Dynamic Entry Animations**: Staggered fades, zoom scales, spacing expansions (horizontal fanning), sliding, and physical stacking effects.
-* ![Depth & Shadows](https://img.shields.io/badge/Depth_%26_Shadows-db7093?style=flat-square) **Depth & Shadows**: Real-time drop shadow calculations with customizable elevation and border clipping, plus optional blurring for off-center cards.
+| 🎬 Visuals & 3D Perspective | 🛠️ Customization & Builders |
+| :--- | :--- |
+| ![3D Coverflow](https://img.shields.io/badge/3D_Coverflow-02569B?style=flat-square)<br>**Smooth 3D Coverflow Design**<br>Immersive carousel layout with customizable 3D perspective, skew angles, and depth scaling. | ![Center Overlays](https://img.shields.io/badge/Center_Overlays-ff69b4?style=flat-square)<br>**Center Card Overlays**<br>Stack play buttons, badges, or details directly on the centered card with distance-linked fade transitions. |
+| ![Layouts & Loop](https://img.shields.io/badge/Layouts_%26_Loop-blueviolet?style=flat-square)<br>**Layouts & Infinite Loop**<br>Horizontal or vertical scroll directions with properly oriented 3D transforms and seamless circular looping. | ![Adjustable Spacing](https://img.shields.io/badge/Adjustable_Spacing-009688?style=flat-square)<br>**Fully Adjustable Spacing**<br>Set custom overlap parameters, near/far card spacing, viewport fractions, and visible card counts. |
+| ![Entry Animations](https://img.shields.io/badge/Entry_Animations-orange?style=flat-square)<br>**Dynamic Entry Animations**<br>Staggered fades, zoom scales, spacing expansions (horizontal fanning), sliding, and physical stacking effects. | ![Custom Dimensions](https://img.shields.io/badge/Custom_Dimensions-9c27b0?style=flat-square)<br>**Custom Dimensions**<br>Support for explicit card width and height constraints. |
+| ![Depth & Shadows](https://img.shields.io/badge/Depth_%26_Shadows-db7093?style=flat-square)<br>**Depth, Shadows & Blur**<br>Real-time drop shadow calculations, customizable elevation, and blur/obscure effects for off-center cards. | ![Builder API](https://img.shields.io/badge/Builder_API-009688?style=flat-square)<br>**Builder-Based API**<br>On-demand widget creation optimizes rendering performance for large or infinite datasets. |
+| **🎮 Interactions & Input** | **⚡ Performance & Controller** |
+| ![3D Hover Tilt](https://img.shields.io/badge/3D_Hover_Tilt-brightgreen?style=flat-square)<br>**3D Hover & Tilt Effects**<br>Interactive pointer-tracking that tilts cards in 3D space with customizable angles and smooth deceleration. | ![External Control](https://img.shields.io/badge/External_Control-9c27b0?style=flat-square)<br>**Synchronous & Stream Controllers**<br>Programmatic navigation (`next`, `previous`, `animateTo`) paired with real-time stream/notifier scroll updates. |
+| ![Mouse & Trackpad](https://img.shields.io/badge/Mouse_%26_Trackpad-db7093?style=flat-square)<br>**Mouse Wheel & Trackpad**<br>Throttled desktop scroll wheel and trackpad swipe support for smooth page transitions. | ![Desktop Optimizations](https://img.shields.io/badge/Desktop_Optimizations-lightgrey?style=flat-square)<br>**Desktop Optimizations**<br>Automatic scrollbar suppression and platform-tailored drag/scroll sensitivity controls. |
+| ![Gestures & Focus](https://img.shields.io/badge/Gestures_%26_Focus-yellowgreen?style=flat-square)<br>**Gestures & Click-to-Focus**<br>Active cards support internal gestures naturally, and off-center cards auto-navigate to center when clicked. | ![Production Ready](https://img.shields.io/badge/Production_Ready-green?style=flat-square)<br>**Production Ready**<br>Optimized performance, fully tested, and zero external widget dependencies. |
 
-### Interactions & Input
-* ![3D Hover Tilt](https://img.shields.io/badge/3D_Hover_Tilt-brightgreen?style=flat-square) **3D Hover & Tilt Effects**: Interactive pointer-tracking that tilts cards in 3D space with customizable angles and smooth deceleration.
-* ![Mouse & Trackpad](https://img.shields.io/badge/Mouse_%26_Trackpad-db7093?style=flat-square) **Mouse Wheel & Trackpad Navigation**: Seamless, throttled scroll wheel interaction for web and desktop platforms.
-* ![Active Gestures](https://img.shields.io/badge/Active_Gestures-yellowgreen?style=flat-square) **Multi-Gesture Compatibility**: Allows buttons, sliders, and gestures on active cards to respond naturally without interference.
-* ![Click to Focus](https://img.shields.io/badge/Click_to_Focus-ff69b4?style=flat-square) **Click-to-Focus**: Auto-navigates and centers off-center cards when clicked or tapped.
-* ![Infinite Loop](https://img.shields.io/badge/Infinite_Loop-red?style=flat-square) **Infinite Looping**: Support for infinite scroll with seamless boundary transitions.
-
-### Customization & Builders
-* ![Center Overlays](https://img.shields.io/badge/Center_Overlays-ff69b4?style=flat-square) **Center Card Overlays**: Stack play buttons, badges, or details directly on the centered card with distance-linked fade transitions.
-* ![Adjustable Spacing](https://img.shields.io/badge/Adjustable_Spacing-009688?style=flat-square) **Fully Adjustable Spacing**: Set custom overlap parameters, near card spacing, far card spacing, viewport fractions, and visible card counts.
-* ![Custom Dimensions](https://img.shields.io/badge/Custom_Dimensions-9c27b0?style=flat-square) **Custom Dimensions**: Support for explicit card width and height constraints.
-
-### Performance & Controller
-* ![Builder API](https://img.shields.io/badge/Builder_API-009688?style=flat-square) **Builder-Based API**: On-demand widget creation optimizes rendering performance for large or infinite datasets.
-* ![External Control](https://img.shields.io/badge/External_Control-9c27b0?style=flat-square) **Synchronous & Stream Controllers**: Programmatic navigation (`next`, `previous`, `animateTo`) paired with real-time stream/notifier scroll position updates.
-* ![Desktop Scrollbars](https://img.shields.io/badge/Desktop_Scrollbars-lightgrey?style=flat-square) **Suppressed Desktop Scrollbars**: Automatic scrollbar suppression for clean web/desktop presentation.
-* ![Production Ready](https://img.shields.io/badge/Production_Ready-green?style=flat-square) **Production Ready**: Optimized performance, fully tested, and zero external widget dependencies.
 
 ## Preview
 
