@@ -53,6 +53,11 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
   double _shadowElevation = 8.0;
   double _cardCornerRadiusValue = 24.0;
 
+  // Page indicator settings
+  double _indicatorDotSize = 8.0;
+  double _indicatorDotSpacing = 12.0;
+  bool _indicatorUseThemeColor = true;
+
   Axis _scrollDirection = Axis.horizontal;
   bool _useCustomWidth = false;
   double _carouselWidth = 340.0;
@@ -301,9 +306,14 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                   const SizedBox(height: 24),
 
                   // Dynamic Liquid Page Indicator
-                  _CoverflowPageIndicator(
+                  CoverflowPageIndicator(
+                    controller: _controller,
                     itemCount: _demoCards.length,
-                    pageListenable: _controller.pageListenable,
+                    activeColor: _indicatorUseThemeColor
+                        ? Colors.pinkAccent
+                        : Colors.white,
+                    dotSize: _indicatorDotSize,
+                    dotSpacing: _indicatorDotSpacing,
                     onTap: (index) {
                       _controller.animateTo(index);
                     },
@@ -477,6 +487,36 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                                       () => _cardCornerRadiusValue = val,
                                     ),
                                     suffix: 'px',
+                                  ),
+                                  const Divider(
+                                    height: 32,
+                                    color: Colors.white24,
+                                  ),
+                                  _GlassSlider(
+                                    title: 'Indicator Dot Size',
+                                    value: _indicatorDotSize,
+                                    min: 4.0,
+                                    max: 16.0,
+                                    onChanged: (val) =>
+                                        setState(() => _indicatorDotSize = val),
+                                    suffix: 'px',
+                                  ),
+                                  _GlassSlider(
+                                    title: 'Indicator Dot Spacing',
+                                    value: _indicatorDotSpacing,
+                                    min: 4.0,
+                                    max: 24.0,
+                                    onChanged: (val) => setState(
+                                      () => _indicatorDotSpacing = val,
+                                    ),
+                                    suffix: 'px',
+                                  ),
+                                  _GlassSwitch(
+                                    title: 'Theme-colored Active Dot',
+                                    value: _indicatorUseThemeColor,
+                                    onChanged: (val) => setState(
+                                      () => _indicatorUseThemeColor = val,
+                                    ),
                                   ),
                                 ] else if (_configTab == 1) ...[
                                   // Tab 1: Motion settings
@@ -703,116 +743,6 @@ class _AmbientBackdrop extends StatelessWidget {
             // The content
             Positioned.fill(child: child),
           ],
-        );
-      },
-    );
-  }
-}
-
-/// Liquid sliding active pill page indicator
-class _CoverflowPageIndicator extends StatelessWidget {
-  final int itemCount;
-  final ValueNotifier<double> pageListenable;
-  final void Function(int) onTap;
-
-  const _CoverflowPageIndicator({
-    required this.itemCount,
-    required this.pageListenable,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    const double dotSize = 8.0;
-    const double spacing = 12.0;
-    const double step = dotSize + spacing;
-
-    return ValueListenableBuilder<double>(
-      valueListenable: pageListenable,
-      builder: (context, page, _) {
-        final double t = page - page.floor();
-        final int floor = page.floor();
-
-        final double activeLeft;
-        final double activeWidth;
-
-        if (t < 0.5) {
-          activeLeft = (floor % itemCount) * step;
-          activeWidth = dotSize + (t / 0.5) * step;
-        } else {
-          activeLeft = (floor % itemCount) * step + ((t - 0.5) / 0.5) * step;
-          activeWidth = dotSize + (1.0 - (t - 0.5) / 0.5) * step;
-        }
-
-        final int indexA = floor % itemCount;
-        final int indexB = (floor + 1) % itemCount;
-
-        final double left;
-        final double width;
-
-        if (indexB == 0 && t > 0.0) {
-          if (t < 0.5) {
-            left = indexA * step;
-            width = dotSize + (t / 0.5) * step;
-          } else {
-            left = 0;
-            width = dotSize + (1.0 - (t - 0.5) / 0.5) * step;
-          }
-        } else {
-          left = activeLeft;
-          width = activeWidth;
-        }
-
-        return Container(
-          height: 24,
-          alignment: Alignment.center,
-          child: SizedBox(
-            width: itemCount * dotSize + (itemCount - 1) * spacing,
-            height: dotSize,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                ...List.generate(itemCount, (i) {
-                  return Positioned(
-                    left: i * step,
-                    top: 0,
-                    width: dotSize,
-                    height: dotSize,
-                    child: GestureDetector(
-                      onTap: () => onTap(i),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.15),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-                Positioned(
-                  left: left,
-                  top: 0,
-                  width: width,
-                  height: dotSize,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(dotSize / 2),
-                      gradient: const LinearGradient(
-                        colors: [Colors.pinkAccent, Colors.purpleAccent],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.pinkAccent.withValues(alpha: 0.4),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         );
       },
     );
