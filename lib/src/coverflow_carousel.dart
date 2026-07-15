@@ -283,10 +283,11 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
   Timer? _autoplayTimer;
   bool _isHovering = false;
   bool _isUserDragging = false;
+  bool _autoplayControllerOverride = false;
   bool _disposed = false;
 
   void _resumeAutoplay() {
-    if (!widget.autoplay) return;
+    if (!widget.autoplay && !_autoplayControllerOverride) return;
     if (_isUserDragging) return;
     if (_isHovering && widget.autoplayPauseOnHover) return;
     if (widget.itemCount <= 1) return;
@@ -307,23 +308,42 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
     if (!_controller.hasClients) return;
     if (widget.itemCount <= 1) return;
 
+    final forward = widget.controller?.autoplayForward ?? true;
     final page = _controller.page ?? 0.0;
-    final targetPage = page.round() + 1;
+    final targetPage = page.round() + (forward ? 1 : -1);
 
     if (widget.isInfinite) {
-      _controller.nextPage(
-        duration: widget.animationDuration,
-        curve: widget.animationCurve,
-      );
-    } else {
-      if (targetPage < widget.itemCount) {
+      if (forward) {
         _controller.nextPage(
           duration: widget.animationDuration,
           curve: widget.animationCurve,
         );
       } else {
+        _controller.previousPage(
+          duration: widget.animationDuration,
+          curve: widget.animationCurve,
+        );
+      }
+    } else {
+      if (forward && targetPage < widget.itemCount) {
+        _controller.nextPage(
+          duration: widget.animationDuration,
+          curve: widget.animationCurve,
+        );
+      } else if (forward) {
         _controller.animateToPage(
           0,
+          duration: widget.animationDuration,
+          curve: widget.animationCurve,
+        );
+      } else if (targetPage >= 0) {
+        _controller.previousPage(
+          duration: widget.animationDuration,
+          curve: widget.animationCurve,
+        );
+      } else {
+        _controller.animateToPage(
+          widget.itemCount - 1,
           duration: widget.animationDuration,
           curve: widget.animationCurve,
         );
@@ -506,7 +526,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
 
     if (oldWidget.autoplay != widget.autoplay ||
         oldWidget.autoplayInterval != widget.autoplayInterval) {
-      if (widget.autoplay) {
+      if (widget.autoplay || _autoplayControllerOverride) {
         _resumeAutoplay();
       } else {
         _pauseAutoplay();
@@ -553,6 +573,20 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
           duration: widget.animationDuration,
           curve: widget.animationCurve,
         );
+      },
+      jumpTo: (index) {
+        final targetPage = widget.isInfinite
+            ? _getNearestVirtualPage(index, currentPage, widget.itemCount)
+            : index;
+        _controller.jumpToPage(targetPage);
+      },
+      startAutoplay: () {
+        _autoplayControllerOverride = true;
+        _resumeAutoplay();
+      },
+      stopAutoplay: () {
+        _autoplayControllerOverride = false;
+        _pauseAutoplay();
       },
     );
     _updateControllerMetrics();

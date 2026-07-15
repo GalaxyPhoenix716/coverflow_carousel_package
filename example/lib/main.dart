@@ -49,6 +49,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
   double _carouselHeight = 360.0;
   bool _autoplay = false;
   double _autoplayIntervalSeconds = 3.0;
+  bool _autoplayDirectionForward = true;
   bool _enableShadow = true;
   double _shadowElevation = 8.0;
   double _cardCornerRadiusValue = 24.0;
@@ -532,7 +533,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                                     onChanged: (val) =>
                                         setState(() => _autoplay = val),
                                   ),
-                                  if (_autoplay)
+                                  if (_autoplay) ...[
                                     _GlassSlider(
                                       title: 'Autoplay Speed (Interval)',
                                       value: _autoplayIntervalSeconds,
@@ -544,12 +545,46 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                                       ),
                                       suffix: 's',
                                     ),
+                                    _GlassSwitch(
+                                      title: 'Autoplay Direction',
+                                      value: _autoplayDirectionForward,
+                                      onChanged: (val) {
+                                        setState(
+                                          () => _autoplayDirectionForward = val,
+                                        );
+                                        _controller.setAutoplayDirection(val);
+                                      },
+                                    ),
+                                  ],
                                   _GlassSwitch(
                                     title: 'Mouse Scroll Wheel Navigation',
                                     value: _enableScrollWheel,
                                     onChanged: (val) => setState(
                                       () => _enableScrollWheel = val,
                                     ),
+                                  ),
+                                  const Divider(
+                                    height: 20,
+                                    color: Colors.white12,
+                                  ),
+                                  _ProgrammaticAutoplayControls(
+                                    controller: _controller,
+                                  ),
+                                  const Divider(
+                                    height: 20,
+                                    color: Colors.white12,
+                                  ),
+                                  _GlassDropdown<int>(
+                                    title: 'Jump to Page',
+                                    value: _activePage,
+                                    items: List.generate(
+                                      _demoCards.length,
+                                      (i) => i,
+                                    ),
+                                    onChanged: (val) {
+                                      if (val != null) _controller.jumpTo(val);
+                                    },
+                                    labelBuilder: (i) => 'Card #$i',
                                   ),
                                 ] else ...[
                                   // Tab 2: VFX settings
@@ -745,6 +780,109 @@ class _AmbientBackdrop extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// Row of buttons for programmatic autoplay control via the controller.
+class _ProgrammaticAutoplayControls extends StatefulWidget {
+  final CoverflowCarouselController controller;
+
+  const _ProgrammaticAutoplayControls({required this.controller});
+
+  @override
+  State<_ProgrammaticAutoplayControls> createState() =>
+      _ProgrammaticAutoplayControlsState();
+}
+
+class _ProgrammaticAutoplayControlsState
+    extends State<_ProgrammaticAutoplayControls> {
+  bool _running = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Controller Autoplay Override',
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: _running
+                    ? null
+                    : () {
+                        widget.controller.startAutoplay();
+                        setState(() => _running = true);
+                      },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: _running
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.greenAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: _running
+                          ? Colors.white12
+                          : Colors.greenAccent.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Start',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: _running ? Colors.white38 : Colors.greenAccent,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: !_running
+                    ? null
+                    : () {
+                        widget.controller.stopAutoplay();
+                        setState(() => _running = false);
+                      },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: !_running
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.redAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: !_running
+                          ? Colors.white12
+                          : Colors.redAccent.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Stop',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: !_running ? Colors.white38 : Colors.redAccent,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
