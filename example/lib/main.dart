@@ -310,9 +310,8 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                     controller: _controller,
                     itemCount: _demoCards.length,
                     activeColor: _indicatorUseThemeColor
-                        ? Colors.pinkAccent
+                        ? Theme.of(context).colorScheme.primary
                         : Colors.white,
-                    dotSize: _indicatorDotSize,
                     dotSpacing: _indicatorDotSpacing,
                     onTap: (index) {
                       _controller.animateTo(index);
