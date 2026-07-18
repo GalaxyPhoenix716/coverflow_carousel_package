@@ -37,8 +37,7 @@ class CoverflowPageIndicator extends StatelessWidget {
         if (itemCount <= 0) return const SizedBox.shrink();
 
         final count = itemCount;
-        final clamped =
-            page.clamp(0.0, (count - 1).toDouble()).toDouble();
+        final clamped = page.clamp(0.0, (count - 1).toDouble()).toDouble();
         final floor = clamped.floor();
         final t = clamped - floor;
         final indexB = (floor + 1) % count;
