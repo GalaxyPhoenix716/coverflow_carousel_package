@@ -92,10 +92,9 @@ class CoverflowPageIndicator extends StatelessWidget {
   }
 
   Widget _buildActivePill({required double left, required double width}) {
-    final edge = (_tapTargetSize - dotSize) / 2;
     return Positioned(
-      left: left + edge,
-      top: 4 + edge,
+      left: left,
+      top: 4,
       width: width,
       height: dotSize,
       child: IgnorePointer(
