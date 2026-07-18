@@ -70,13 +70,12 @@ class CoverflowPageIndicator extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (isWrapping && t > 0.5) ...[
-                _buildActivePill(left: 0, width: dotSize * ((t - 0.5) / 0.5)),
+              if (isWrapping && t > 0.5)
                 _buildActivePill(
-                  left: floor * step,
-                  width: dotSize * (1.0 - (t - 0.5) / 0.5),
-                ),
-              ] else
+                  left: 0,
+                  width: dotSize + (1.0 - (t - 0.5) / 0.5) * step,
+                )
+              else
                 _buildActivePill(
                   left: floor * step + (t < 0.5 ? 0 : ((t - 0.5) / 0.5) * step),
                   width:
@@ -93,9 +92,10 @@ class CoverflowPageIndicator extends StatelessWidget {
   }
 
   Widget _buildActivePill({required double left, required double width}) {
+    final edge = (_tapTargetSize - dotSize) / 2;
     return Positioned(
-      left: left,
-      top: 4,
+      left: left + edge,
+      top: 4 + edge,
       width: width,
       height: dotSize,
       child: IgnorePointer(

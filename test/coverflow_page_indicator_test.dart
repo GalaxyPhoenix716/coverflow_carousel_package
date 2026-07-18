@@ -92,7 +92,12 @@ void main() {
         ),
       );
 
-      expect(find.byType(SizedBox), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is SizedBox && w.width == 0 && w.height == 0,
+        ),
+        findsOneWidget,
+      );
       expect(find.byType(GestureDetector), findsNothing);
     });
 
