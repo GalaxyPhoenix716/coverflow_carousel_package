@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'coverflow_carousel_controller.dart';
 
+const double _tapTargetSize = 40.0;
+
 /// Shows the current page as a sliding pill over dots.
 ///
 /// Listens to [controller]'s [ValueNotifier] and animates the active
@@ -38,12 +40,8 @@ class CoverflowPageIndicator extends StatelessWidget {
         final clamped = ((page % count) + count) % count;
         final floor = clamped.floor();
         final t = clamped - floor;
-
-        final activeLeft =
-            floor * step + (t < 0.5 ? 0 : ((t - 0.5) / 0.5) * step);
-        final activeWidth =
-            dotSize +
-            (t < 0.5 ? (t / 0.5) * step : (1.0 - (t - 0.5) / 0.5) * step);
+        final indexB = (floor + 1) % count;
+        final isWrapping = count > 1 && indexB == 0 && floor == count - 1;
 
         return SizedBox(
           width: count * dotSize + (count - 1) * dotSpacing,
@@ -51,40 +49,69 @@ class CoverflowPageIndicator extends StatelessWidget {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              ...List.generate(count, (i) {
-                return Positioned(
-                  left: i * step,
-                  top: 4,
-                  width: dotSize,
-                  height: dotSize,
+              for (final i in List.generate(count, (i) => i))
+                Positioned(
+                  left: i * step - (_tapTargetSize - dotSize) / 2,
+                  top: 4 - (_tapTargetSize - dotSize) / 2,
+                  width: _tapTargetSize,
+                  height: _tapTargetSize,
                   child: GestureDetector(
                     onTap: onTap != null ? () => onTap!(i) : null,
                     behavior: HitTestBehavior.opaque,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: inactiveColor,
+                    child: Center(
+                      child: Container(
+                        width: dotSize,
+                        height: dotSize,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: inactiveColor,
+                        ),
                       ),
                     ),
                   ),
-                );
-              }),
-              Positioned(
-                left: activeLeft,
-                top: 4,
-                width: activeWidth,
-                height: dotSize,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: activeColor,
-                    borderRadius: BorderRadius.circular(dotSize / 2),
-                  ),
                 ),
-              ),
+              if (isWrapping && t > 0.5) ...[
+                _buildActivePill(
+                  left: 0,
+                  width: dotSize * ((t - 0.5) / 0.5),
+                ),
+                _buildActivePill(
+                  left: floor * step,
+                  width: dotSize * (1.0 - (t - 0.5) / 0.5),
+                ),
+              ] else
+                _buildActivePill(
+                  left: floor * step +
+                      (t < 0.5 ? 0 : ((t - 0.5) / 0.5) * step),
+                  width: dotSize +
+                      (t < 0.5
+                          ? (t / 0.5) * step
+                          : (1.0 - (t - 0.5) / 0.5) * step),
+                ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildActivePill({
+    required double left,
+    required double width,
+  }) {
+    return Positioned(
+      left: left,
+      top: 4,
+      width: width,
+      height: dotSize,
+      child: IgnorePointer(
+        child: Container(
+          decoration: BoxDecoration(
+            color: activeColor,
+            borderRadius: BorderRadius.circular(dotSize / 2),
+          ),
+        ),
+      ),
     );
   }
 }
