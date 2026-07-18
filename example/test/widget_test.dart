@@ -8,7 +8,7 @@ void main() {
   testWidgets(
     'Example app runs, hovers, and scrolls with mouse wheel without errors',
     (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(360 * 3.0, 800 * 3.0);
+      tester.view.physicalSize = const Size(500 * 3.0, 800 * 3.0);
       tester.view.devicePixelRatio = 3.0;
 
       addTearDown(() {
@@ -21,7 +21,7 @@ void main() {
 
       // Verify Nebula Voyage (index 0) is initial focused index
       expect(find.text('Nebula Voyage'), findsOneWidget);
-      expect(find.text('Focused Index: 0'), findsOneWidget);
+      expect(find.text('INDEX 1 / 5'), findsOneWidget);
 
       // 1. Test Mouse Scroll Wheel navigation
       final Offset carouselCenter = tester.getCenter(
@@ -36,7 +36,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // The focused index should now be 1 (Oceanic Abyss)
-      expect(find.text('Focused Index: 1'), findsOneWidget);
+      expect(find.text('INDEX 2 / 5'), findsOneWidget);
       expect(find.text('Oceanic Abyss'), findsOneWidget);
 
       // Wait for scroll throttle cooldown to expire
@@ -52,7 +52,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // The focused index should be back to 0
-      expect(find.text('Focused Index: 0'), findsOneWidget);
+      expect(find.text('INDEX 1 / 5'), findsOneWidget);
 
       // 2. Test Hover Tilt
       final Offset cardOffset = tester.getCenter(find.text('Nebula Voyage'));

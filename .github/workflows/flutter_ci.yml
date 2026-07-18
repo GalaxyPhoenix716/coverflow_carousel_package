@@ -41,3 +41,8 @@ jobs:
         run: |
           cd example
           flutter analyze
+
+      - name: Run Tests (Example)
+        run: |
+          cd example
+          flutter test
