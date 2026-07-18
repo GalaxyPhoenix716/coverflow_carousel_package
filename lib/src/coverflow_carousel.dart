@@ -283,11 +283,12 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
   Timer? _autoplayTimer;
   bool _isHovering = false;
   bool _isUserDragging = false;
-  bool _autoplayControllerOverride = false;
+  bool? _autoplayControllerOverride;
   bool _disposed = false;
 
   void _resumeAutoplay() {
-    if (!widget.autoplay && !_autoplayControllerOverride) return;
+    final shouldAutoplay = _autoplayControllerOverride ?? widget.autoplay;
+    if (!shouldAutoplay) return;
     if (_isUserDragging) return;
     if (_isHovering && widget.autoplayPauseOnHover) return;
     if (widget.itemCount <= 1) return;
@@ -526,7 +527,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
 
     if (oldWidget.autoplay != widget.autoplay ||
         oldWidget.autoplayInterval != widget.autoplayInterval) {
-      if (widget.autoplay || _autoplayControllerOverride) {
+      if (_autoplayControllerOverride ?? widget.autoplay) {
         _resumeAutoplay();
       } else {
         _pauseAutoplay();
