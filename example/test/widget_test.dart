@@ -11,7 +11,6 @@ void main() {
       tester.view.physicalSize = const Size(500 * 3.0, 800 * 3.0);
       tester.view.devicePixelRatio = 3.0;
 
-
       addTearDown(() {
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();
@@ -54,7 +53,6 @@ void main() {
 
       // The focused index should be back to 0
       expect(find.text('INDEX 1 / 5'), findsOneWidget);
-
 
       // 2. Test Hover Tilt
       final Offset cardOffset = tester.getCenter(find.text('Nebula Voyage'));
