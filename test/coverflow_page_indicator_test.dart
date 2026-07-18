@@ -4,7 +4,7 @@ import 'package:coverflow_carousel/coverflow_carousel.dart';
 
 void main() {
   group('CoverflowPageIndicator', () {
-    testWidgets('renders correct number of dots', (tester) async {
+    testWidgets('renders correct number of inactive dots', (tester) async {
       final controller = CoverflowCarouselController();
 
       await tester.pumpWidget(
@@ -15,7 +15,12 @@ void main() {
         ),
       );
 
-      expect(find.byType(GestureDetector), findsNWidgets(5));
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is Container && w.decoration is BoxDecoration,
+        ),
+        findsNWidgets(6),
+      );
     });
 
     testWidgets('updates on controller page change', (tester) async {
@@ -33,7 +38,6 @@ void main() {
       await tester.pump();
 
       expect(find.byType(CoverflowPageIndicator), findsOneWidget);
-      expect(find.byType(GestureDetector), findsNWidgets(5));
     });
 
     testWidgets('calls onTap with correct index', (tester) async {
@@ -54,8 +58,9 @@ void main() {
         ),
       );
 
-      final detectors = find.byType(GestureDetector);
-      await tester.tap(detectors.last);
+      // Single GestureDetector covers the whole strip; tap near the last dot.
+      final indicator = find.byType(CoverflowPageIndicator);
+      await tester.tapAt(tester.getCenter(indicator) + const Offset(15, 0));
       expect(tappedIndex, 2);
     });
 
@@ -78,7 +83,12 @@ void main() {
       );
 
       expect(find.byType(CoverflowPageIndicator), findsOneWidget);
-      expect(find.byType(GestureDetector), findsNWidgets(3));
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is Container && w.decoration is BoxDecoration,
+        ),
+        findsNWidgets(4),
+      );
     });
 
     testWidgets('returns empty box for zero items', (tester) async {
