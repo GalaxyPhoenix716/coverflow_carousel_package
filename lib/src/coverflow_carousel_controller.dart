@@ -7,11 +7,17 @@ import 'dart:async';
 /// to trigger scroll animations programmatically (e.g., jumping/animating to a page,
 /// transitioning to the next or previous card) and listen to real-time scroll progress.
 ///
+/// Also exposes autoplay controls — [startAutoplay], [stopAutoplay], and
+/// [setAutoplayDirection] — plus instant [jumpTo] navigation without animation.
+///
 /// Remember to call [dispose] when discarding the controller to clean up stream subscriptions.
 class CoverflowCarouselController {
   void Function()? _next;
   void Function()? _previous;
   void Function(int)? _animateTo;
+  void Function(int)? _jumpTo;
+  void Function()? _startAutoplay;
+  void Function()? _stopAutoplay;
 
   final ValueNotifier<double> _pageNotifier = ValueNotifier<double>(0.0);
   final ValueNotifier<double> _rawPageNotifier = ValueNotifier<double>(0.0);
@@ -20,6 +26,8 @@ class CoverflowCarouselController {
       StreamController<double>.broadcast();
   final StreamController<double> _rawPageStreamController =
       StreamController<double>.broadcast();
+
+  bool _autoplayForward = true;
 
   /// A [ValueNotifier] that emits the current normalized fractional page index.
   ///
@@ -42,6 +50,11 @@ class CoverflowCarouselController {
   /// A broadcast stream emitting the current raw fractional page index on every scroll update.
   Stream<double> get rawPageStream => _rawPageStreamController.stream;
 
+  /// Whether autoplay is currently moving forward (`true`) or backward (`false`).
+  ///
+  /// Defaults to `true`. Use [setAutoplayDirection] to change at runtime.
+  bool get autoplayForward => _autoplayForward;
+
   /// Programmatically transitions the carousel to the next card.
   ///
   /// Uses the default animation duration and curve specified on the carousel.
@@ -58,6 +71,29 @@ class CoverflowCarouselController {
   /// (shortest-path animation) to transition to the target [index].
   void animateTo(int index) => _animateTo?.call(index);
 
+  /// Instantly jumps to the card at [index] with no slide animation.
+  ///
+  /// On infinite carousels this picks the nearest virtual page, so the
+  /// carousel wraps around the shortest way.
+  void jumpTo(int index) => _jumpTo?.call(index);
+
+  /// Forces autoplay to start, even if the carousel widget was created
+  /// with `autoplay: false`.
+  void startAutoplay() => _startAutoplay?.call();
+
+  /// Stops autoplay entirely. The carousel will not auto-advance until
+  /// [startAutoplay] is called again or the widget's `autoplay` property
+  /// is `true`.
+  void stopAutoplay() => _stopAutoplay?.call();
+
+  /// Sets the autoplay scroll direction.
+  ///
+  /// Pass `true` for forward (next card), `false` for backward (previous card).
+  /// The change takes effect on the next autoplay tick.
+  void setAutoplayDirection(bool forward) {
+    _autoplayForward = forward;
+  }
+
   /// Attaches the controller to a [CoverflowCarousel] state.
   ///
   /// Called internally by the carousel state; do not call this method directly.
@@ -65,10 +101,16 @@ class CoverflowCarouselController {
     required VoidCallback next,
     required VoidCallback previous,
     required ValueChanged<int> animateTo,
+    void Function(int)? jumpTo,
+    VoidCallback? startAutoplay,
+    VoidCallback? stopAutoplay,
   }) {
     _next = next;
     _previous = previous;
     _animateTo = animateTo;
+    _jumpTo = jumpTo;
+    _startAutoplay = startAutoplay;
+    _stopAutoplay = stopAutoplay;
   }
 
   /// Detaches the controller from the carousel.
@@ -79,6 +121,9 @@ class CoverflowCarouselController {
     _next = null;
     _previous = null;
     _animateTo = null;
+    _jumpTo = null;
+    _startAutoplay = null;
+    _stopAutoplay = null;
   }
 
   /// Updates the internal metrics of the controller.

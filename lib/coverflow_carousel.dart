@@ -6,3 +6,4 @@ library;
 
 export 'src/coverflow_carousel.dart';
 export 'src/coverflow_carousel_controller.dart';
+export 'src/coverflow_page_indicator.dart';

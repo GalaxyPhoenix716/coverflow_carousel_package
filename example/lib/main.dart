@@ -49,9 +49,15 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
   double _carouselHeight = 360.0;
   bool _autoplay = false;
   double _autoplayIntervalSeconds = 3.0;
+  bool _autoplayDirectionForward = true;
   bool _enableShadow = true;
   double _shadowElevation = 8.0;
   double _cardCornerRadiusValue = 24.0;
+
+  // Page indicator settings
+  double _indicatorDotSize = 8.0;
+  double _indicatorDotSpacing = 12.0;
+  bool _indicatorUseThemeColor = true;
 
   Axis _scrollDirection = Axis.horizontal;
   bool _useCustomWidth = false;
@@ -301,9 +307,14 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                   const SizedBox(height: 24),
 
                   // Dynamic Liquid Page Indicator
-                  _CoverflowPageIndicator(
+                  CoverflowPageIndicator(
+                    controller: _controller,
                     itemCount: _demoCards.length,
-                    pageListenable: _controller.pageListenable,
+                    activeColor: _indicatorUseThemeColor
+                        ? Colors.pinkAccent
+                        : Colors.white,
+                    dotSize: _indicatorDotSize,
+                    dotSpacing: _indicatorDotSpacing,
                     onTap: (index) {
                       _controller.animateTo(index);
                     },
@@ -478,6 +489,36 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                                     ),
                                     suffix: 'px',
                                   ),
+                                  const Divider(
+                                    height: 32,
+                                    color: Colors.white24,
+                                  ),
+                                  _GlassSlider(
+                                    title: 'Indicator Dot Size',
+                                    value: _indicatorDotSize,
+                                    min: 4.0,
+                                    max: 16.0,
+                                    onChanged: (val) =>
+                                        setState(() => _indicatorDotSize = val),
+                                    suffix: 'px',
+                                  ),
+                                  _GlassSlider(
+                                    title: 'Indicator Dot Spacing',
+                                    value: _indicatorDotSpacing,
+                                    min: 4.0,
+                                    max: 24.0,
+                                    onChanged: (val) => setState(
+                                      () => _indicatorDotSpacing = val,
+                                    ),
+                                    suffix: 'px',
+                                  ),
+                                  _GlassSwitch(
+                                    title: 'Theme-colored Active Dot',
+                                    value: _indicatorUseThemeColor,
+                                    onChanged: (val) => setState(
+                                      () => _indicatorUseThemeColor = val,
+                                    ),
+                                  ),
                                 ] else if (_configTab == 1) ...[
                                   // Tab 1: Motion settings
                                   _GlassSwitch(
@@ -492,7 +533,7 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                                     onChanged: (val) =>
                                         setState(() => _autoplay = val),
                                   ),
-                                  if (_autoplay)
+                                  if (_autoplay) ...[
                                     _GlassSlider(
                                       title: 'Autoplay Speed (Interval)',
                                       value: _autoplayIntervalSeconds,
@@ -504,12 +545,46 @@ class _CoverflowDemoScreenState extends State<CoverflowDemoScreen> {
                                       ),
                                       suffix: 's',
                                     ),
+                                    _GlassSwitch(
+                                      title: 'Autoplay Direction',
+                                      value: _autoplayDirectionForward,
+                                      onChanged: (val) {
+                                        setState(
+                                          () => _autoplayDirectionForward = val,
+                                        );
+                                        _controller.setAutoplayDirection(val);
+                                      },
+                                    ),
+                                  ],
                                   _GlassSwitch(
                                     title: 'Mouse Scroll Wheel Navigation',
                                     value: _enableScrollWheel,
                                     onChanged: (val) => setState(
                                       () => _enableScrollWheel = val,
                                     ),
+                                  ),
+                                  const Divider(
+                                    height: 20,
+                                    color: Colors.white12,
+                                  ),
+                                  _ProgrammaticAutoplayControls(
+                                    controller: _controller,
+                                  ),
+                                  const Divider(
+                                    height: 20,
+                                    color: Colors.white12,
+                                  ),
+                                  _GlassDropdown<int>(
+                                    title: 'Jump to Page',
+                                    value: _activePage,
+                                    items: List.generate(
+                                      _demoCards.length,
+                                      (i) => i,
+                                    ),
+                                    onChanged: (val) {
+                                      if (val != null) _controller.jumpTo(val);
+                                    },
+                                    labelBuilder: (i) => 'Card #$i',
                                   ),
                                 ] else ...[
                                   // Tab 2: VFX settings
@@ -709,112 +784,105 @@ class _AmbientBackdrop extends StatelessWidget {
   }
 }
 
-/// Liquid sliding active pill page indicator
-class _CoverflowPageIndicator extends StatelessWidget {
-  final int itemCount;
-  final ValueNotifier<double> pageListenable;
-  final void Function(int) onTap;
+/// Row of buttons for programmatic autoplay control via the controller.
+class _ProgrammaticAutoplayControls extends StatefulWidget {
+  final CoverflowCarouselController controller;
 
-  const _CoverflowPageIndicator({
-    required this.itemCount,
-    required this.pageListenable,
-    required this.onTap,
-  });
+  const _ProgrammaticAutoplayControls({required this.controller});
+
+  @override
+  State<_ProgrammaticAutoplayControls> createState() =>
+      _ProgrammaticAutoplayControlsState();
+}
+
+class _ProgrammaticAutoplayControlsState
+    extends State<_ProgrammaticAutoplayControls> {
+  bool _running = false;
 
   @override
   Widget build(BuildContext context) {
-    const double dotSize = 8.0;
-    const double spacing = 12.0;
-    const double step = dotSize + spacing;
-
-    return ValueListenableBuilder<double>(
-      valueListenable: pageListenable,
-      builder: (context, page, _) {
-        final double t = page - page.floor();
-        final int floor = page.floor();
-
-        final double activeLeft;
-        final double activeWidth;
-
-        if (t < 0.5) {
-          activeLeft = (floor % itemCount) * step;
-          activeWidth = dotSize + (t / 0.5) * step;
-        } else {
-          activeLeft = (floor % itemCount) * step + ((t - 0.5) / 0.5) * step;
-          activeWidth = dotSize + (1.0 - (t - 0.5) / 0.5) * step;
-        }
-
-        final int indexA = floor % itemCount;
-        final int indexB = (floor + 1) % itemCount;
-
-        final double left;
-        final double width;
-
-        if (indexB == 0 && t > 0.0) {
-          if (t < 0.5) {
-            left = indexA * step;
-            width = dotSize + (t / 0.5) * step;
-          } else {
-            left = 0;
-            width = dotSize + (1.0 - (t - 0.5) / 0.5) * step;
-          }
-        } else {
-          left = activeLeft;
-          width = activeWidth;
-        }
-
-        return Container(
-          height: 24,
-          alignment: Alignment.center,
-          child: SizedBox(
-            width: itemCount * dotSize + (itemCount - 1) * spacing,
-            height: dotSize,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                ...List.generate(itemCount, (i) {
-                  return Positioned(
-                    left: i * step,
-                    top: 0,
-                    width: dotSize,
-                    height: dotSize,
-                    child: GestureDetector(
-                      onTap: () => onTap(i),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.15),
-                        ),
-                      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Controller Autoplay Override',
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: _running
+                    ? null
+                    : () {
+                        widget.controller.startAutoplay();
+                        setState(() => _running = true);
+                      },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: _running
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.greenAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: _running
+                          ? Colors.white12
+                          : Colors.greenAccent.withValues(alpha: 0.3),
                     ),
-                  );
-                }),
-                Positioned(
-                  left: left,
-                  top: 0,
-                  width: width,
-                  height: dotSize,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(dotSize / 2),
-                      gradient: const LinearGradient(
-                        colors: [Colors.pinkAccent, Colors.purpleAccent],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.pinkAccent.withValues(alpha: 0.4),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        ),
-                      ],
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Start',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: _running ? Colors.white38 : Colors.greenAccent,
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        );
-      },
+            const SizedBox(width: 8),
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: !_running
+                    ? null
+                    : () {
+                        widget.controller.stopAutoplay();
+                        setState(() => _running = false);
+                      },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: !_running
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.redAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: !_running
+                          ? Colors.white12
+                          : Colors.redAccent.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Stop',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: !_running ? Colors.white38 : Colors.redAccent,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

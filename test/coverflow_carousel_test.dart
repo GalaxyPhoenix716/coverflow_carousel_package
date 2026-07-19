@@ -1106,4 +1106,173 @@ void main() {
     await sub.cancel();
     controller.dispose();
   });
+
+  group('CoverflowCarouselController jumpTo', () {
+    testWidgets('jumpTo changes page instantly without animation', (
+      WidgetTester tester,
+    ) async {
+      final controller = CoverflowCarouselController();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CoverflowCarousel.builder(
+              controller: controller,
+              itemCount: 5,
+              itemWidth: 200,
+              itemHeight: 300,
+              scrollDirection: Axis.horizontal,
+              initialPage: 0,
+              itemBuilder: (context, index) {
+                return Text('Item $index');
+              },
+            ),
+          ),
+        ),
+      );
+
+      expect(controller.page, 0.0);
+
+      controller.jumpTo(2);
+      await tester.pump();
+
+      expect(controller.page, 2.0);
+    });
+
+    testWidgets('jumpTo works on infinite carousel', (
+      WidgetTester tester,
+    ) async {
+      final controller = CoverflowCarouselController();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CoverflowCarousel.builder(
+              controller: controller,
+              itemCount: 5,
+              itemWidth: 200,
+              itemHeight: 300,
+              scrollDirection: Axis.horizontal,
+              isInfinite: true,
+              initialPage: 0,
+              itemBuilder: (context, index) {
+                return Text('Item $index');
+              },
+            ),
+          ),
+        ),
+      );
+
+      controller.jumpTo(4);
+      await tester.pump();
+
+      expect(controller.page, 4.0);
+    });
+
+    test('jumpTo does nothing before attach', () {
+      final controller = CoverflowCarouselController();
+      expect(() => controller.jumpTo(2), returnsNormally);
+    });
+  });
+
+  group('CoverflowCarouselController autoplay controls', () {
+    testWidgets('startAutoplay and stopAutoplay work', (
+      WidgetTester tester,
+    ) async {
+      final controller = CoverflowCarouselController();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CoverflowCarousel.builder(
+              controller: controller,
+              itemCount: 5,
+              itemWidth: 200,
+              itemHeight: 300,
+              scrollDirection: Axis.horizontal,
+              autoplay: false,
+              onPageChanged: (_) {},
+              itemBuilder: (context, index) {
+                return Text('Item $index');
+              },
+            ),
+          ),
+        ),
+      );
+
+      expect(controller.page, 0.0);
+
+      controller.startAutoplay();
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(controller.page, 1.0);
+
+      controller.stopAutoplay();
+      final pageAfterStop = controller.page;
+
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(controller.page, pageAfterStop);
+    });
+
+    test('methods do nothing before attach', () {
+      final controller = CoverflowCarouselController();
+      expect(() => controller.startAutoplay(), returnsNormally);
+      expect(() => controller.stopAutoplay(), returnsNormally);
+    });
+  });
+
+  group('CoverflowCarouselController autoplay direction', () {
+    testWidgets('setAutoplayDirection changes tick direction', (
+      WidgetTester tester,
+    ) async {
+      final controller = CoverflowCarouselController();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CoverflowCarousel.builder(
+              controller: controller,
+              itemCount: 5,
+              itemWidth: 200,
+              itemHeight: 300,
+              scrollDirection: Axis.horizontal,
+              initialPage: 2,
+              autoplay: true,
+              onPageChanged: (_) {},
+              itemBuilder: (context, index) {
+                return Text('Item $index');
+              },
+            ),
+          ),
+        ),
+      );
+
+      expect(controller.page, 2.0);
+
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(controller.page, 3.0);
+
+      controller.setAutoplayDirection(false);
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(controller.page, 2.0);
+    });
+
+    test('default direction is forward', () {
+      final controller = CoverflowCarouselController();
+      expect(controller.autoplayForward, isTrue);
+    });
+
+    test('setAutoplayDirection updates autoplayForward', () {
+      final controller = CoverflowCarouselController();
+      controller.setAutoplayDirection(false);
+      expect(controller.autoplayForward, isFalse);
+      controller.setAutoplayDirection(true);
+      expect(controller.autoplayForward, isTrue);
+    });
+  });
 }
