@@ -554,18 +554,21 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
   void _attachController() {
     widget.controller?.attach(
       next: () {
+        if (!_controller.hasClients) return;
         _controller.nextPage(
           duration: widget.animationDuration,
           curve: widget.animationCurve,
         );
       },
       previous: () {
+        if (!_controller.hasClients) return;
         _controller.previousPage(
           duration: widget.animationDuration,
           curve: widget.animationCurve,
         );
       },
       animateTo: (index) {
+        if (!_controller.hasClients) return;
         final targetPage = widget.isInfinite
             ? _getNearestVirtualPage(index, currentPage, widget.itemCount)
             : index;
@@ -576,6 +579,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel>
         );
       },
       jumpTo: (index) {
+        if (!_controller.hasClients) return;
         final targetPage = widget.isInfinite
             ? _getNearestVirtualPage(index, currentPage, widget.itemCount)
             : index;

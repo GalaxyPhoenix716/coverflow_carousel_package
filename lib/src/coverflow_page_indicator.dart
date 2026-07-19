@@ -17,7 +17,8 @@ class CoverflowPageIndicator extends StatelessWidget {
     this.dotSize = 8.0,
     this.dotSpacing = 12.0,
     this.onTap,
-  });
+  }) : assert(dotSize > 0, 'dotSize must be greater than zero'),
+       assert(dotSpacing >= 0, 'dotSpacing must be non-negative');
 
   final CoverflowCarouselController controller;
   final int itemCount;
