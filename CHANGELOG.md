@@ -1,3 +1,8 @@
+## 2.1.0
+
+1. Added customizable page indicators
+2. Extended controller support for autoplay
+
 ## 2.0.1
 
 1. Beautified readme
